@@ -1,0 +1,19 @@
+{
+    "json_class": "Chef::Role",
+    "name": "taxestime",
+    "description": "TaxesTime",
+    "run_list": ["recipe[users]","recipe[zorba]"],
+    "default_attributes": {
+        "users": {
+            "vlad": {
+                "ssh_keys": {
+                    "mypubkey": "a_long_key_value"
+                },
+                "password": "$1$hiP2aAjP$Trjk50DMk2ivTnfVhbpD0."
+            }
+        },
+        "taxes-time": {
+            "server-name": "taxestime.test"
+        }
+    }
+}
