@@ -11,6 +11,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     
      engine_config.vm.network "private_network", ip:"33.33.35.29"
      engine_config.vm.network :forwarded_port, guest: 80, host: 8505
+
+     engine_config.vm.synced_folder "samples", "/samples"
+
+
      
      engine_config.vm.provider :virtualbox do |vb|
         vb.customize ["modifyvm", :id, "--cpuexecutioncap", "50"]
