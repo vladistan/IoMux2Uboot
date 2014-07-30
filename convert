@@ -1,0 +1,3 @@
+zorba -e input-context="samples/i.MX6DQ_Smart_Device.RevA.IoMuxDesign.xml" IOMUX-2-USBScript.xquery > DCD_Commands.c
+
+
