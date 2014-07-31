@@ -21,8 +21,18 @@ for $x in  $c//SignalDesign
         &#xa; </node>       
 };
 
+
+declare function nm:dram($c)
+{
+
+for $x in  $c//write
+    return  <node>
+:write {data($x/@addr)} --  {data($x/@val)}
+        &#xa; </node>       
+};
     
     
 
-declare variable $input-context external;
-nm:signal($input-context//PinMuxDesign)
+declare variable $dram external;
+declare variable $iomux external;
+nm:signal($iomux//PinMuxDesign) union <node>DramScript</node> union nm:dram($dram)
