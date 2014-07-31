@@ -1,16 +1,78 @@
 <entries>
-   <write addr="1" val="0" />
-   <write addr="2" val="0" />
-   <write addr="3" val="0" />
-   <write addr="4" val="0" />
-   <write addr="5" val="0" />
-   <write addr="6" val="0" />
-   <write addr="7" val="0" />
-   <write addr="8" val="0" />
-   <write addr="9" val="880" />
-   <write addr="10" val="0" />
-   <write addr="11" val="0" />
-   <write addr="12" val="0" />
-   <write addr="13" val="0" />
-   <write addr="14" val="0" />
+	<write addr="0x20e00068" val="0xffffffff" comment="" />
+	<write addr="0x20e0006c" val="0xffffffff" comment="" />
+	<write addr="0x20e00070" val="0xffffffff" comment="" />
+	<write addr="0x20e00074" val="0xffffffff" comment="" />
+	<write addr="0x20e00078" val="0xffffffff" comment="" />
+	<write addr="0x20e0007c" val="0xffffffff" comment="" />
+	<write addr="0x20e00080" val="0xffffffff" comment="" />
+	<write addr="0x20e00084" val="0xffffffff" comment="" />
+	<write addr="0x20e00018" val="0x00060324" comment="DDR clk to 400MHz" />
+	<write addr="0x20e00774" val="0x00080000" comment="IOMUXC_SW_PAD_CTL_GRP_DDR_TYPE" />
+	<write addr="0x20e00754" val="0x00000000" comment="IOMUXC_SW_PAD_CTL_GRP_DDRPKE" />
+	<write addr="0x20e004ac" val="0x00000030" comment="IOMUXC_SW_PAD_CTL_PAD_DRAM_SDCLK_0" />
+	<write addr="0x20e004b0" val="0x00000030" comment="IOMUXC_SW_PAD_CTL_PAD_DRAM_SDCLK_1" />
+	<write addr="0x20e00464" val="0x00000030" comment="IOMUXC_SW_PAD_CTL_PAD_DRAM_CAS" />
+	<write addr="0x20e00490" val="0x00000030" comment="IOMUXC_SW_PAD_CTL_PAD_DRAM_RAS" />
+	<write addr="0x20e0074c" val="0x00000030" comment="IOMUXC_SW_PAD_CTL_GRP_ADDDS" />
+	<write addr="0x20e00494" val="0x00000030" comment="IOMUXC_SW_PAD_CTL_PAD_DRAM_RESET" />
+	<write addr="0x20e004a0" val="0x00000000" comment="IOMUXC_SW_PAD_CTL_PAD_DRAM_SDBA2 - DSE can be configured using Group Control Register: IOMUXC_SW_PAD_CTL_GRP_CTLDS" />
+	<write addr="0x20e004b4" val="0x00000030" comment="IOMUXC_SW_PAD_CTL_PAD_DRAM_SDODT0" />
+	<write addr="0x20e004b8" val="0x00000030" comment="IOMUXC_SW_PAD_CTL_PAD_DRAM_SDODT1" />
+	<write addr="0x20e0076c" val="0x00000030" comment="IOMUXC_SW_PAD_CTL_GRP_CTLDS" />
+	<write addr="0x20e00750" val="0x00020000" comment="IOMUXC_SW_PAD_CTL_GRP_DDRMODE_CTL" />
+	<write addr="0x20e004bc" val="0x00003030" comment="IOMUXC_SW_PAD_CTL_PAD_DRAM_SDQS0" />
+	<write addr="0x20e004c0" val="0x00003030" comment="IOMUXC_SW_PAD_CTL_PAD_DRAM_SDQS1" />
+	<write addr="0x20e004c4" val="0x00003030" comment="IOMUXC_SW_PAD_CTL_PAD_DRAM_SDQS2" />
+	<write addr="0x20e004c8" val="0x00003030" comment="IOMUXC_SW_PAD_CTL_PAD_DRAM_SDQS3" />
+	<write addr="0x20e00760" val="0x00020000" comment="IOMUXC_SW_PAD_CTL_GRP_DDRMODE" />
+	<write addr="0x20e00764" val="0x00000030" comment="IOMUXC_SW_PAD_CTL_GRP_B0DS" />
+	<write addr="0x20e00770" val="0x00000030" comment="IOMUXC_SW_PAD_CTL_GRP_B1DS" />
+	<write addr="0x20e00778" val="0x00000030" comment="IOMUXC_SW_PAD_CTL_GRP_B2DS" />
+	<write addr="0x20e0077c" val="0x00000030" comment="IOMUXC_SW_PAD_CTL_GRP_B3DS" />
+	<write addr="0x20e00470" val="0x00000030" comment="IOMUXC_SW_PAD_CTL_PAD_DRAM_DQM0" />
+	<write addr="0x20e00474" val="0x00000030" comment="IOMUXC_SW_PAD_CTL_PAD_DRAM_DQM1" />
+	<write addr="0x20e00478" val="0x00000030" comment="IOMUXC_SW_PAD_CTL_PAD_DRAM_DQM2" />
+	<write addr="0x20e0047c" val="0x00000030" comment="IOMUXC_SW_PAD_CTL_PAD_DRAM_DQM3" />
+	<write addr="0x021b0001c" val="0x00008000" comment="MMDC0_MDSCR" />
+	<write addr="0x021b0085c" val="0x1B4700C7" comment="MMDC0_MPZQLP2CTL" />
+	<write addr="0x021b00800" val="0xA1390003" comment="DDR_PHY_P0_MPZQHWCTRL" />
+	<write addr="0x021b00890" val="0x00400000" comment="values of 20" />
+	<write addr="0x021b00848" val="0x464A4C4C" comment="MPRDDLCTL PHY0" />
+	<write addr="0x021b00850" val="0x38363434" comment="MPWRDLCTL PHY0" />
+	<write addr="0x021b0083c" val="0x20000000" comment="" />
+	<write addr="0x021b00840" val="0x00000000" comment="" />
+	<write addr="0x021b0081c" val="0x33333333" comment="DDR_PHY_P0_MPREDQBY0DL3	Original Values (Delete Later)	Difference?" />
+	<write addr="0x021b00820" val="0x33333333" comment="DDR_PHY_P0_MPREDQBY1DL3	0x00009c40	0x33333333" />
+	<write addr="0x021b00824" val="0x33333333" comment="DDR_PHY_P0_MPREDQBY2DL3	0x00000000	0x33333333" />
+	<write addr="0x021b00828" val="0x33333333" comment="DDR_PHY_P0_MPREDQBY3DL3	0x00000000	0x33333333" />
+	<write addr="0x021b0082c" val="0xF3333333" comment="DDR_PHY_P0_MPREDQBY0DL3	Original Values (Delete Later)	Difference?" />
+	<write addr="0x021b00830" val="0xF3333333" comment="DDR_PHY_P0_MPREDQBY1DL3	0x00009c40	0xF3333333" />
+	<write addr="0x021b00834" val="0xF3333333" comment="DDR_PHY_P0_MPREDQBY2DL3	0x00000000	0xF3333333" />
+	<write addr="0x021b00838" val="0xF3333333" comment="DDR_PHY_P0_MPREDQBY3DL3	0x00000000	0xF3333333" />
+	<write addr="0x021b008b8" val="0x00000800" comment="DDR_PHY_P0_MPMUR0" />
+	<write addr="0x021b00004" val="0x00020036" comment="MMDC0_MDPDC" />
+	<write addr="0x021b00008" val="0x00000000" comment="MMDC0_MDOTC" />
+	<write addr="0x021b0000c" val="0x33374133" comment="MMDC0_MDCFG0" />
+	<write addr="0x021b00010" val="0x00100A82" comment="MMDC0_MDCFG1" />
+	<write addr="0x021b00014" val="0x00000093" comment="MMDC0_MDCFG2" />
+	<write addr="0x021b00018" val="0x00001688" comment="MMDC0_MDMISC	0x015dc002	0x00001748" />
+	<write addr="0x021b0001c" val="0x00008000" comment="MMDC0_MDSCR" />
+	<write addr="0x021b0002c" val="0x0F9F26D2" comment="MMDC0_MDRWD" />
+	<write addr="0x021b00030" val="0x00000010" comment="MMDC0_MDOR" />
+	<write addr="0x021b00038" val="0x00190778" comment="MMDC0_MDCFG3LP" />
+	<write addr="0x021b00040" val="0x00000017" comment="Chan0 CS0_END" />
+	<write addr="0x021b00400" val="0x11420000" comment="MMDC0_MAARCR ADOPT optimized priorities. Dyn jump disabled" />
+	<write addr="0x021b00000" val="0x83110000" comment="MMDC0_MDCTL" />
+	<write addr="0x021b0001c" val="0x003F8030" comment="MRW: BA=0 CS=0 MR_ADDR=63 MR_OP=0" />
+	<write addr="0x021b0001c" val="0xFF0A8030" comment="MRW: BA=0 CS=0 MR_ADDR=10 MR_OP=ff" />
+	<write addr="0x021b0001c" val="0x82018030" comment="MRW: BA=0 CS=0 MR_ADDR=1  MR_OP=c2" />
+	<write addr="0x021b0001c" val="0x04028030" comment="MRW: BA=0 CS=0 MR_ADDR=2  MR_OP=6. tcl=8" />
+	<write addr="0x021b0001c" val="0x02038030" comment="MRW: BA=0 CS=0 MR_ADDR=3  MR_OP=2.drive=240/6" />
+	<write addr="0x021b00800" val="0xA1390003" comment="DDR_PHY_P0_MPZQHWCTRL" />
+	<write addr="0x021b00020" val="0x00001800" comment="MMDC0_MDREF" />
+	<write addr="0x021b00818" val="0x00000000" comment="DDR_PHY_P0_MPODTCTRL" />
+	<write addr="0x021b00004" val="0x00025576" comment="MMDC0_MDPDC now SDCTL power down enabled" />
+	<write addr="0x021b00404" val="0x00011006" comment="MMDC0_MAPSR ADOPT power down enabled" />
+	<write addr="0x021b0001c" val="0x00000000" comment="MMDC0_MDSCR" />
 </entries>
