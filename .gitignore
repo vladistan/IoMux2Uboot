@@ -1,0 +1,6 @@
+DCD_Commands.c
+*.swp
+/Berksfile.lock
+/.vagrant/
+
+/folder/
