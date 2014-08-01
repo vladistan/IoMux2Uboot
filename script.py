@@ -1,23 +1,41 @@
+# Not finished. Was attempting to create dictionary from XML file similar to pinDict.
+# This is so that the pads can be grouped by instance as in the IOMux.
+# The goal was to write smaller functions like setup_eim(), setup_gpio1(), etc.
+
+# Created the dictionay. Just need to change the matching functionality to adapt 
+# the new data structure. Also need to create the function creation.
+ERROR
+
 import xml.etree.ElementTree as ET
 
-DEBUG = 0;
+DEBUG = 1;
 
 # Get information from IoMux XML file 
 tree = ET.parse('samples/i.MX6SDL_Sabre_AI_RevA.IomuxDesign.xml');
 root = tree.getroot();
-addresses = []; names = []; nets = []; alts = [];
+padDict = dict();
 
 for signal in root.findall(".//SignalDesign[@IsChecked='true']"):
 	for register in signal.findall(".//Register"):
 		if 'SW_PAD_CTL_PAD' in register.get('Name') and 'ALT' in signal.find(".//Routing").get('mode'):
-			addresses.append(register.get('Address')[6:])
-			names.append(signal.get('Name'))
-			nets.append(signal.find(".//Routing").get('padNet')[7:])
-			alts.append(signal.find(".//Routing").get('mode')[-1:])
+			address = register.get('Address')[6:]
+			name = signal.get('Name')
+			net = signal.find(".//Routing").get('padNet')[7:]
+			mode = signal.find(".//Routing").get('mode')[-1:]
+			instance = signal.get('Instance')
+
+			try:
+				padDict[instance][address] = [name, net, mode]
+			except KeyError:
+				padDict[instance] = dict();
+				padDict[instance][address] = [name, net, mode]
 
 if DEBUG:
 	w = open('iomux', 'w');
-	[w.write('Name: %16s, Net: %16s, Mode: %s @ %s\n' % (names[i], nets[i], alts[i], addresses[i])) for i in range(0, len(addresses))];
+	for instance in padDict:
+		for address in padDict[instance]:
+			pad = padDict[instance][address]
+			w.write('Instance: %8s, Address: @ %s, Name: %20s, Net: %16s, Mode: %1s\n' % (instance, address, pad[0], pad[1], pad[2]))
 	w.close();
 
 # Create nested dictionary from header file.
