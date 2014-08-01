@@ -4,7 +4,6 @@
 
 # Created the dictionay. Just need to change the matching functionality to adapt 
 # the new data structure. Also need to create the function creation.
-ERROR
 
 import xml.etree.ElementTree as ET
 
@@ -62,10 +61,10 @@ if DEBUG:
 # Write pad setup and comment to file
 w = open('results', 'w');
 
-for i in range(0, len(addresses)):
-	pins = pinDict[addresses[i]];
-	mode = int(alts[i])
-	comment = names[i] + "--" + nets[i]
-	w.write('mxc_iomux_v3_setup_pad(%s) // %s\n' % (pins[mode], comment));
+#for i in range(0, len(addresses)):
+#	pins = pinDict[addresses[i]];
+#	mode = int(alts[i])
+#	comment = names[i] + "--" + nets[i]
+#	w.write('mxc_iomux_v3_setup_pad(%s) // %s\n' % (pins[mode], comment));
 
 w.close();
