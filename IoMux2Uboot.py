@@ -7,12 +7,12 @@
 
 import xml.etree.ElementTree as ET
 
-DEBUG = 1;
+DEBUG = 1
 
 # Get information from IoMux XML file 
-tree = ET.parse('samples/i.MX6SDL_Sabre_AI_RevA.IomuxDesign.xml');
-root = tree.getroot();
-padDict = dict();
+tree = ET.parse('samples/i.MX6SDL_Sabre_AI_RevA.IomuxDesign.xml')
+root = tree.getroot()
+padDict = dict()
 
 for signal in root.findall(".//SignalDesign[@IsChecked='true']"):
 	for register in signal.findall(".//Register"):
@@ -26,11 +26,11 @@ for signal in root.findall(".//SignalDesign[@IsChecked='true']"):
 			try:
 				padDict[instance][address] = [name, net, mode]
 			except KeyError:
-				padDict[instance] = dict();
+				padDict[instance] = dict()
 				padDict[instance][address] = [name, net, mode]
 
 if DEBUG:
-	w = open('iomux', 'w');
+	w = open('iomux', 'w')
 	for instance in padDict:
 		for address in padDict[instance]:
 			pad = padDict[instance][address]
@@ -38,8 +38,8 @@ if DEBUG:
 	w.close();
 
 # Create nested dictionary from header file.
-pins = open('headers/mx6dl_pins.h').readlines();
-pinDict = dict();
+pins = open('headers/mx6dl_pins.h').readlines()
+pinDict = dict()
 
 for i in range(0, len(pins)):
 	if pins[i].startswith('#define MX6DL_PAD'):
@@ -50,13 +50,13 @@ for i in range(0, len(pins)):
 		try:
 			pinDict[addr][mode] = name
 		except KeyError:
-			pinDict[addr] = dict();
+			pinDict[addr] = dict()
 			pinDict[addr][mode] = name
 
 if DEBUG:
-	w = open('pinDict', 'w');
-	[w.write('%s: %s\n' % (pin, pinDict[pin])) for pin in pinDict];
-	w.close();
+	w = open('pinDict', 'w')
+	[w.write('%s: %s\n' % (pin, pinDict[pin])) for pin in pinDict]
+	w.close()
 
 # Write pad setup and comment to file
 w = open('results', 'w');
@@ -67,4 +67,4 @@ w = open('results', 'w');
 #	comment = names[i] + "--" + nets[i]
 #	w.write('mxc_iomux_v3_setup_pad(%s) // %s\n' % (pins[mode], comment));
 
-w.close();
+w.close()
