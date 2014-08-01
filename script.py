@@ -1,7 +1,5 @@
 import xml.etree.ElementTree as ET
 
-w = open('DCD_commands.c', 'w');
-
 # Get information from IoMux XML file 
 tree = ET.parse('samples/i.MX6SDL_Sabre_AI_RevA.IomuxDesign.xml');
 root = tree.getroot();
@@ -17,4 +15,24 @@ for signal in root.findall(".//SignalDesign[@IsChecked='true']"):
 
 w = open('iomux', 'w');
 [w.write('Name: %16s, Net: %16s, Mode: %s @ %s\n' % (names[i], nets[i], alts[i], addresses[i])) for i in range(0, len(addresses))];
+w.close();
+
+# Create nested dictionary from header file.
+pins = open('headers/mx6dl_pins.h').readlines();
+pinDict = dict();
+
+for i in range(0, len(pins)):
+	if pins[i].startswith('#define MX6DL_PAD'):
+		name = pins[i][8:].split()[0]
+		addr = pins[i+1].strip()[12:].split(',')[0]
+		mode = int(pins[i+1].strip()[12:].split(',')[2].strip().split('|')[0].strip())
+
+		try:
+			pinDict[addr][mode] = name
+		except KeyError:
+			pinDict[addr] = dict();
+			pinDict[addr][mode] = name
+
+w = open('pinDict', 'w');
+[w.write('%s: %s\n' % (pin, pinDict[pin])) for pin in pinDict];
 w.close();
