@@ -11,13 +11,40 @@ DEBUG = 1
 
 
 def parse_iomux(input_file):
+    """
+    Parse IOMux file
+    """
     tree = Et.parse(input_file)
     root = tree.getroot()
     return root
 
 
+def dump_pin_dict(pin_dict):
+    """
+    Dump contents of Pin Dictionary for debugging purposes
+    """
+    w = open('pinDict', 'w')
+    [w.write('%s: %s\n' % (pin, pin_dict[pin])) for pin in pin_dict]
+    w.close()
+
+
+def dump_iomux(pad_dict):
+    """
+    Dump contents of IOMUx dictionary for debugging purposes
+    """
+    w = open('iomux', 'w')
+    for instance in pad_dict:
+        for address in pad_dict[instance]:
+            pad = pad_dict[instance][address]
+            w.write('Instance: %8s, Address: @ %s, Name: %20s, Net: %16s, Mode: %1s\n' % (
+                instance, address, pad[0], pad[1], pad[2]))
+    w.close()
+
+
 def main(input_file):
-    # Get information from IoMux XML file
+    """
+    Get information from IoMux XML file
+    """
 
     root = parse_iomux(input_file)
 
@@ -39,14 +66,7 @@ def main(input_file):
                     pad_dict[instance] = dict()
                     pad_dict[instance][address] = [name, net, mode]
 
-    if DEBUG:
-        w = open('iomux', 'w')
-        for instance in pad_dict:
-            for address in pad_dict[instance]:
-                pad = pad_dict[instance][address]
-                w.write('Instance: %8s, Address: @ %s, Name: %20s, Net: %16s, Mode: %1s\n' % (
-                    instance, address, pad[0], pad[1], pad[2]))
-        w.close()
+    if DEBUG:  dump_iomux(pad_dict)
 
     # Create nested dictionary from header file.
     pins = open('headers/mx6dl_pins.h').readlines()
@@ -64,10 +84,7 @@ def main(input_file):
                 pin_dict[addr] = dict()
                 pin_dict[addr][mode] = name
 
-    if DEBUG:
-        w = open('pinDict', 'w')
-        [w.write('%s: %s\n' % (pin, pin_dict[pin])) for pin in pin_dict]
-        w.close()
+    if DEBUG: dump_pin_dict(pin_dict)
 
     # Write pad setup and comment to file
     w = open('results', 'w')
