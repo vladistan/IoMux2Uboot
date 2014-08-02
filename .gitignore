@@ -2,5 +2,6 @@ DCD_Commands.c
 *.swp
 /Berksfile.lock
 /.vagrant/
-
+.idea
+__pycache__
 /folder/
