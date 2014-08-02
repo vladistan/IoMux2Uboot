@@ -49,24 +49,18 @@ class ParserTest(TestCase):
 
         rt = self.root.findall("./SignalDesign/Routing")
 
-        self.assertEquals(len(rt),330)
+        self.assertEquals(len(rt), 330)
 
         # There should be 117 signal w/o routing
-        no_alt = [x.get('padNet') for x in rt if not "ALT" in x.get("mode")  ]
-        self.assertEquals(len(no_alt),117)
-
+        no_alt = [x.get('padNet') for x in rt if not "ALT" in x.get("mode")]
+        self.assertEquals(len(no_alt), 117)
 
         # There should be 111 signal w/o routing that belong to DRAM
-        no_alt_wo_dram = [x for x in no_alt if not 'DRAM' in x ]
-        self.assertEquals(len(no_alt_wo_dram),6)
+        no_alt_wo_dram = [x for x in no_alt if not 'DRAM' in x]
+        self.assertEquals(len(no_alt_wo_dram), 6)
 
         # There should be 6 signal w/o routing that belong to JTAG
-        no_alt_wo_jtag = [x for x in no_alt_wo_dram if not 'JTAG' in x ]
-        self.assertEquals(len(no_alt_wo_jtag),0)
+        no_alt_wo_jtag = [x for x in no_alt_wo_dram if not 'JTAG' in x]
+        self.assertEquals(len(no_alt_wo_jtag), 0)
 
         # There should be 0 signal w/o routing that belong neither to DRAM nor JTAG
-
-
-
-
-
