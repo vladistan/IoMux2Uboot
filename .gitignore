@@ -5,3 +5,5 @@ DCD_Commands.c
 .idea
 __pycache__
 /folder/
+
+*.pyc
