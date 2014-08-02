@@ -21,6 +21,10 @@ def dump_pin_dict(pin_dict):
     """
     Dump contents of Pin Dictionary for debugging purposes
     """
+
+    if not DEBUG:
+        return
+
     w = open('pinDict.dmp', 'w')
     [w.write('%s: %s\n' % (pin, pin_dict[pin])) for pin in pin_dict]
     w.flush()
@@ -31,6 +35,9 @@ def dump_iomux(pad_dict):
     """
     Dump contents of IOMUx dictionary for debugging purposes
     """
+    if not DEBUG:
+        return
+
     w = open('iomux.dmp', 'w')
     for instance in pad_dict:
         for address in pad_dict[instance]:
@@ -39,6 +46,25 @@ def dump_iomux(pad_dict):
                 instance, address, pad[0], pad[1], pad[2]))
     w.flush()
     w.close()
+
+
+def get_header_filename(chip_type):
+    if 'DL' in chip_type:
+        pins_filename = 'headers/mx6dl_pins.h'
+    elif 'SL' in chip_type:
+        pins_filename = 'headers/mx6sl_pins.h'
+    else:
+        pins_filename = 'headers/mx6_pins.h'
+
+    return pins_filename
+
+
+def append_pad(pad_dict, instance, address, name, net, mode):
+    try:
+        pad_dict[instance][address] = [name, net, mode]
+    except KeyError:
+        pad_dict[instance] = dict()
+        pad_dict[instance][address] = [name, net, mode]
 
 
 def main(input_file):
@@ -60,25 +86,12 @@ def main(input_file):
                 net = sig_routing.get('padNet')[7:]
                 mode = sig_routing.get('mode')[-1:]
                 instance = signal.get('Instance')
+                append_pad(pad_dict, instance, address, name, net, mode)
 
-                try:
-                    pad_dict[instance][address] = [name, net, mode]
-                except KeyError:
-                    pad_dict[instance] = dict()
-                    pad_dict[instance][address] = [name, net, mode]
-
-    if DEBUG:
-        dump_iomux(pad_dict)
+    dump_iomux(pad_dict)
 
     chip_type = root.find(".//Chip").text
-    if 'DL' in chip_type:
-        pins_filename = 'headers/mx6dl_pins.h'
-    elif 'SL' in chip_type:
-        pins_filename = 'headers/mx6sl_pins.h'
-    elif 'DQ' in chip_type: 
-        pins_filename = 'headers/mx6sl_pins.h'
-    else:
-        print 'Bad Chip Type specified in XML file.'
+    pins_filename = get_header_filename(chip_type)
 
     # Create nested dictionary from header file.
     pins = open(pins_filename).readlines()
@@ -100,8 +113,7 @@ def main(input_file):
 
     print pin_dict
 
-    if DEBUG:
-        dump_pin_dict(pin_dict)
+    dump_pin_dict(pin_dict)
 
     # Write pad setup and comment to file
     # w = open('DCD_commands.c', 'w')
@@ -119,4 +131,4 @@ def main(input_file):
 
 
 if __name__ == "__main__":
-    main('samples/i.MX6DQ_Sabre_AI_RevA.IomuxDesign.xml')
+    main('samples/i.MX6SDL_Sabre_AI_RevA.IomuxDesign.xml')
