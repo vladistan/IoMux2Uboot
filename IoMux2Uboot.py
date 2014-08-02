@@ -1,11 +1,9 @@
-# Not finished. Was attempting to create dictionary from XML file similar to pinDict.
-# This is so that the pads can be grouped by instance as in the IOMux.
-# The goal was to write smaller functions like setup_eim(), setup_gpio1(), etc.
-
-# Created the dictionary. Just need to change the matching functionality to adapt
-# the new data structure. Also need to create the function creation.
+# Not finished. Was attempting to support all chip types.
+# Running into issues with different string matching.
+# Trying to use regex to help find correct strings.
 
 import xml.etree.ElementTree as Et
+import re
 
 DEBUG = 1
 
@@ -25,6 +23,7 @@ def dump_pin_dict(pin_dict):
     """
     w = open('pinDict.dmp', 'w')
     [w.write('%s: %s\n' % (pin, pin_dict[pin])) for pin in pin_dict]
+    w.flush()
     w.close()
 
 
@@ -38,6 +37,7 @@ def dump_iomux(pad_dict):
             pad = pad_dict[instance][address]
             w.write('Instance: %8s, Address: @ %s, Name: %20s, Net: %16s, Mode: %1s\n' % (
                 instance, address, pad[0], pad[1], pad[2]))
+    w.flush()
     w.close()
 
 
@@ -70,12 +70,20 @@ def main(input_file):
     if DEBUG:
         dump_iomux(pad_dict)
 
+    chip_type = root.find(".//Chip").text
+    if 'DL' in chip_type:
+        pins_filename = 'headers/mx6dl_pins.h'
+    elif 'SL' in chip_type:
+        pins_filename = 'headers/mx6sl_pins.h'
+    else:
+        pins_filename = 'headers/mx6_pins.h'
+
     # Create nested dictionary from header file.
-    pins = open('headers/mx6dl_pins.h').readlines()
+    pins = open(pins_filename).readlines()
     pin_dict = dict()
 
     for i in range(0, len(pins)):
-        if pins[i].startswith('#define MX6DL_PAD'):
+        if re.match(('#define .*MX6.{1,2}_PAD_'), pins[i]):
             name = pins[i][8:].split()[0]
             addr = pins[i + 1].strip()[12:].split(',')[0]
             mode = int(pins[i + 1].strip()[12:].split(',')[2].strip().split('|')[0].strip())
@@ -85,6 +93,8 @@ def main(input_file):
             except KeyError:
                 pin_dict[addr] = dict()
                 pin_dict[addr][mode] = name
+
+    print pin_dict
 
     if DEBUG:
         dump_pin_dict(pin_dict)
@@ -105,4 +115,4 @@ def main(input_file):
 
 
 if __name__ == "__main__":
-    main('samples/i.MX6SDL_Sabre_AI_RevA.IomuxDesign.xml')
+    main('samples/i.MX6DQ_Sabre_AI_RevA.IomuxDesign.xml')
