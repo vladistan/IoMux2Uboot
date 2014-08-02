@@ -1,6 +1,6 @@
 # Not finished. Was attempting to support all chip types.
 # Running into issues with different string matching.
-# Trying to use regex to help find correct strings.
+# Will have to make a special case for Q type chips.
 
 import xml.etree.ElementTree as Et
 import re
@@ -75,24 +75,28 @@ def main(input_file):
         pins_filename = 'headers/mx6dl_pins.h'
     elif 'SL' in chip_type:
         pins_filename = 'headers/mx6sl_pins.h'
+    elif 'DQ' in chip_type: 
+        pins_filename = 'headers/mx6sl_pins.h'
     else:
-        pins_filename = 'headers/mx6_pins.h'
+        print 'Bad Chip Type specified in XML file.'
 
     # Create nested dictionary from header file.
     pins = open(pins_filename).readlines()
     pin_dict = dict()
 
     for i in range(0, len(pins)):
-        if re.match(('#define .*MX6.{1,2}_PAD_'), pins[i]):
-            name = pins[i][8:].split()[0]
-            addr = pins[i + 1].strip()[12:].split(',')[0]
-            mode = int(pins[i + 1].strip()[12:].split(',')[2].strip().split('|')[0].strip())
-
+        if re.match(('#define MX6.{1,2}_PAD_'), pins[i]):
             try:
-                pin_dict[addr][mode] = name
-            except KeyError:
-                pin_dict[addr] = dict()
-                pin_dict[addr][mode] = name
+                name = pins[i][8:].split()[0]
+                addr = pins[i + 1].strip()[12:].split(',')[0]
+                mode = int(pins[i + 1].strip()[12:].split(',')[2].strip().split('|')[0].strip())
+            except:
+                print pins[i]
+            # try:
+            #     pin_dict[addr][mode] = name
+            # except KeyError:
+            #     pin_dict[addr] = dict()
+            #     pin_dict[addr][mode] = name
 
     print pin_dict
 
@@ -100,18 +104,18 @@ def main(input_file):
         dump_pin_dict(pin_dict)
 
     # Write pad setup and comment to file
-    w = open('DCD_commands.c', 'w')
+    # w = open('DCD_commands.c', 'w')
 
-    for instance in pad_dict:
-        w.write('void setup_%s(){\n' % instance)
-        for address in pad_dict[instance]:
-            mode = int(pad_dict[instance][address][2])
-            pin = pin_dict[address][mode]
-            comment = pad_dict[instance][address][0] + " -- " + pad_dict[instance][address][1]
-            w.write('\tmxc_iomux_v3_setup_pad(%s) // %s\n' % (pin, comment))
-        w.write('}\n\n')
+    # for instance in pad_dict:
+    #     w.write('void setup_%s(){\n' % instance)
+    #     for address in pad_dict[instance]:
+    #         mode = int(pad_dict[instance][address][2])
+    #         pin = pin_dict[address][mode]
+    #         comment = pad_dict[instance][address][0] + " -- " + pad_dict[instance][address][1]
+    #         w.write('\tmxc_iomux_v3_setup_pad(%s) // %s\n' % (pin, comment))
+    #     w.write('}\n\n')
 
-    w.close()
+    # w.close()
 
 
 if __name__ == "__main__":
