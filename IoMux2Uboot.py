@@ -53,11 +53,12 @@ def main(input_file):
     signals = root.findall(".//SignalDesign[@IsChecked='true']")
     for signal in signals:
         for register in signal.findall(".//Register"):
-            if 'SW_PAD_CTL_PAD' in register.get('Name') and 'ALT' in signal.find(".//Routing").get('mode'):
+            sig_routing = signal.find(".//Routing")
+            if 'SW_PAD_CTL_PAD' in register.get('Name') and 'ALT' in sig_routing.get('mode'):
                 address = register.get('Address')[6:]
                 name = signal.get('Name')
-                net = signal.find(".//Routing").get('padNet')[7:]
-                mode = signal.find(".//Routing").get('mode')[-1:]
+                net = sig_routing.get('padNet')[7:]
+                mode = sig_routing.get('mode')[-1:]
                 instance = signal.get('Instance')
 
                 try:
@@ -66,7 +67,8 @@ def main(input_file):
                     pad_dict[instance] = dict()
                     pad_dict[instance][address] = [name, net, mode]
 
-    if DEBUG:  dump_iomux(pad_dict)
+    if DEBUG:
+        dump_iomux(pad_dict)
 
     # Create nested dictionary from header file.
     pins = open('headers/mx6dl_pins.h').readlines()
@@ -84,7 +86,8 @@ def main(input_file):
                 pin_dict[addr] = dict()
                 pin_dict[addr][mode] = name
 
-    if DEBUG: dump_pin_dict(pin_dict)
+    if DEBUG:
+        dump_pin_dict(pin_dict)
 
     # Write pad setup and comment to file
     w = open('results', 'w')
