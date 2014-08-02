@@ -51,6 +51,25 @@ def dump_iomux(pad_dict):
     w.close()
 
 
+def get_header_filename(chip_type):
+    if 'DL' in chip_type:
+        pins_filename = 'headers/mx6dl_pins.h'
+    elif 'SL' in chip_type:
+        pins_filename = 'headers/mx6sl_pins.h'
+    else:
+        pins_filename = 'headers/mx6_pins.h'
+
+    return pins_filename
+
+
+def append_pad(pad_dict, instance, address, name, net, mode):
+    try:
+        pad_dict[instance][address] = [name, net, mode]
+    except KeyError:
+        pad_dict[instance] = dict()
+        pad_dict[instance][address] = [name, net, mode]
+
+
 def main(input_file):
     """
     Get information from IoMux XML file
@@ -70,22 +89,12 @@ def main(input_file):
                 net = sig_routing.get('padNet')[7:]
                 mode = sig_routing.get('mode')[-1:]
                 instance = signal.get('Instance')
-
-                try:
-                    pad_dict[instance][address] = [name, net, mode]
-                except KeyError:
-                    pad_dict[instance] = dict()
-                    pad_dict[instance][address] = [name, net, mode]
+                append_pad(pad_dict, instance, address, name, net, mode)
 
     dump_iomux(pad_dict)
 
     chip_type = root.find(".//Chip").text
-    if 'DL' in chip_type:
-        pins_filename = 'headers/mx6dl_pins.h'
-    elif 'SL' in chip_type:
-        pins_filename = 'headers/mx6sl_pins.h'
-    else:
-        pins_filename = 'headers/mx6_pins.h'
+    pins_filename = get_header_filename(chip_type)
 
     # Create nested dictionary from header file.
     pins = open(pins_filename).readlines()

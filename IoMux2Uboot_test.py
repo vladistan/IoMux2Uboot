@@ -12,6 +12,26 @@ from mock import mock_open
 import IoMux2Uboot
 
 
+class PadDictTest(TestCase):
+
+    def setUp(self):
+        pass
+
+    def test_append_pad_to_existing_instance(self):
+
+        pad_dict = {'bob': {1: [1, 2, 4]}}
+        IoMux2Uboot.append_pad(pad_dict, 'bob', 3,  9, 7, 3)
+
+        self.assertDictEqual(pad_dict, {'bob': {3: [9, 7, 3], 1: [1, 2, 4]}})
+
+    def test_append_pad_to_new_instance(self):
+
+        pad_dict = {'bob': {1: [1, 2, 4]}}
+        IoMux2Uboot.append_pad(pad_dict, 'bill', 3,  9, 7, 3)
+
+        self.assertDictEqual(pad_dict, {'bill': {3: [9, 7, 3]}, 'bob': {1: [1, 2, 4]}})
+
+
 class DebugTest(TestCase):
 
     def setUp(self):
@@ -73,6 +93,24 @@ class DebugTest(TestCase):
         ]
 
         h.write.assert_has_calls(calls)
+
+
+class ChipTypeTest(TestCase):
+
+    def setUp(self):
+        pass
+
+    def test_correct_filename_for_dl(self):
+
+        fname = IoMux2Uboot.get_header_filename("DL")
+
+        self.assertEquals(fname, "headers/mx6dl_pins.h")
+
+    def test_correct_filename_for_sl(self):
+
+        fname = IoMux2Uboot.get_header_filename("SL")
+
+        self.assertEquals(fname, "headers/mx6sl_pins.h")
 
 
 class ParserTest(TestCase):
