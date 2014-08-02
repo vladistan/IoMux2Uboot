@@ -10,13 +10,21 @@ import xml.etree.ElementTree as Et
 DEBUG = 1
 
 
-def main():
-    # Get information from IoMux XML file
-    tree = Et.parse('samples/i.MX6SDL_Sabre_AI_RevA.IomuxDesign.xml')
+def parse_iomux(input_file):
+    tree = Et.parse(input_file)
     root = tree.getroot()
+    return root
+
+
+def main(input_file):
+    # Get information from IoMux XML file
+
+    root = parse_iomux(input_file)
+
     pad_dict = dict()
 
-    for signal in root.findall(".//SignalDesign[@IsChecked='true']"):
+    signals = root.findall(".//SignalDesign[@IsChecked='true']")
+    for signal in signals:
         for register in signal.findall(".//Register"):
             if 'SW_PAD_CTL_PAD' in register.get('Name') and 'ALT' in signal.find(".//Routing").get('mode'):
                 address = register.get('Address')[6:]
@@ -74,4 +82,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main('samples/i.MX6SDL_Sabre_AI_RevA.IomuxDesign.xml')
