@@ -5,15 +5,16 @@
 # Created the dictionary. Just need to change the matching functionality to adapt
 # the new data structure. Also need to create the function creation.
 
-import xml.etree.ElementTree as ET
+import xml.etree.ElementTree as Et
 
 DEBUG = 1
 
+
 def main():
     # Get information from IoMux XML file
-    tree = ET.parse('samples/i.MX6SDL_Sabre_AI_RevA.IomuxDesign.xml')
+    tree = Et.parse('samples/i.MX6SDL_Sabre_AI_RevA.IomuxDesign.xml')
     root = tree.getroot()
-    padDict = dict()
+    pad_dict = dict()
 
     for signal in root.findall(".//SignalDesign[@IsChecked='true']"):
         for register in signal.findall(".//Register"):
@@ -25,23 +26,23 @@ def main():
                 instance = signal.get('Instance')
 
                 try:
-                    padDict[instance][address] = [name, net, mode]
+                    pad_dict[instance][address] = [name, net, mode]
                 except KeyError:
-                    padDict[instance] = dict()
-                    padDict[instance][address] = [name, net, mode]
+                    pad_dict[instance] = dict()
+                    pad_dict[instance][address] = [name, net, mode]
 
     if DEBUG:
         w = open('iomux', 'w')
-        for instance in padDict:
-            for address in padDict[instance]:
-                pad = padDict[instance][address]
+        for instance in pad_dict:
+            for address in pad_dict[instance]:
+                pad = pad_dict[instance][address]
                 w.write('Instance: %8s, Address: @ %s, Name: %20s, Net: %16s, Mode: %1s\n' % (
                     instance, address, pad[0], pad[1], pad[2]))
-        w.close();
+        w.close()
 
     # Create nested dictionary from header file.
     pins = open('headers/mx6dl_pins.h').readlines()
-    pinDict = dict()
+    pin_dict = dict()
 
     for i in range(0, len(pins)):
         if pins[i].startswith('#define MX6DL_PAD'):
@@ -50,18 +51,18 @@ def main():
             mode = int(pins[i + 1].strip()[12:].split(',')[2].strip().split('|')[0].strip())
 
             try:
-                pinDict[addr][mode] = name
+                pin_dict[addr][mode] = name
             except KeyError:
-                pinDict[addr] = dict()
-                pinDict[addr][mode] = name
+                pin_dict[addr] = dict()
+                pin_dict[addr][mode] = name
 
     if DEBUG:
         w = open('pinDict', 'w')
-        [w.write('%s: %s\n' % (pin, pinDict[pin])) for pin in pinDict]
+        [w.write('%s: %s\n' % (pin, pin_dict[pin])) for pin in pin_dict]
         w.close()
 
     # Write pad setup and comment to file
-    w = open('results', 'w');
+    w = open('results', 'w')
 
     #for i in range(0, len(addresses)):
     #	pins = pinDict[addresses[i]];
@@ -72,5 +73,5 @@ def main():
     w.close()
 
 
-if __name__ ==  "__main__":
+if __name__ == "__main__":
     main()
