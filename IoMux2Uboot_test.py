@@ -9,31 +9,76 @@ from unittest import TestCase
 from mock import patch, call
 from mock import mock_open
 
-from IoMux2Uboot import *
+import IoMux2Uboot
 
 
 class DebugTest(TestCase):
 
     def setUp(self):
-        pass
+        self.open = mock_open()
+        self.save_debug = IoMux2Uboot
 
-    def test_write_dict(self):
+    def tearDown(self):
 
-        m = mock_open()
-        with patch('IoMux2Uboot.open', m, create=True):
-            dump_pin_dict({1: {1: "BOB", 2: "BOLL"}, 2: {2: "JANE", 314: "PETE"}})
+        IoMux2Uboot.DEBUG = self.save_debug
 
-        m.assert_called_once_with("pinDict", "w")
-        h = m()
+    def test_when_debug_is_false_should_not_write_pindict(self):
+
+        IoMux2Uboot.DEBUG = False
+
+        with patch('IoMux2Uboot.open', self.open, create=True):
+            IoMux2Uboot.dump_pin_dict({})
+
+        self.assertFalse(self.open.called)
+
+    def test_pin_dict_write_dict(self):
+
+        with patch('IoMux2Uboot.open', self.open, create=True):
+            IoMux2Uboot.dump_pin_dict({1: {1: "BOB", 2: "BOLL"}, 2: {2: "JANE", 314: "PETE"}})
+
+        self.open.assert_called_once_with("pinDict.dmp", "w")
+        h = self.open()
 
         calls = [call.write("1: {1: 'BOB', 2: 'BOLL'}\n"), call().write("2: {2: 'JANE', 314: 'PETE'}\n")]
+        h.write.assert_has_calls(calls)
+
+    def test_when_debug_is_false_should_not_write_iomux(self):
+
+        IoMux2Uboot.DEBUG = False
+
+        with patch('IoMux2Uboot.open', self.open, create=True):
+            IoMux2Uboot.dump_iomux({})
+
+        self.assertFalse(self.open.called)
+
+    def test_write_iomux(self):
+
+        iomux_dict = {'audmux':
+                       {
+                           '03BC': ['AUD6_TXFS', 'DI0_PIN03', '2'],
+                           '03C0': ['AUD6_RXD', 'DI0_PIN04', '2'],
+                           '03E4': ['AUD5_TXC', 'DISP0_DATA16', '3'],
+                           '03F0': ['AUD5_RXD', 'DISP0_DATA19', '3'],
+                       }}
+
+        with patch('IoMux2Uboot.open', self.open, create=True):
+            IoMux2Uboot.dump_iomux(iomux_dict)
+
+        self.open.assert_called_once_with("iomux.dmp", "w")
+        h = self.open()
+
+        calls = [
+            call('Instance:   audmux, Address: @ 03E4, Name:             AUD5_TXC, Net:     DISP0_DATA16, Mode: 3\n'),
+            call('Instance:   audmux, Address: @ 03BC, Name:            AUD6_TXFS, Net:        DI0_PIN03, Mode: 2\n')
+        ]
+
         h.write.assert_has_calls(calls)
 
 
 class ParserTest(TestCase):
 
     def setUp(self):
-        self.root = parse_iomux("samples/i.MX6SDL_Sabre_AI_RevA.IomuxDesign.xml")
+        self.root = IoMux2Uboot.parse_iomux("samples/i.MX6SDL_Sabre_AI_RevA.IomuxDesign.xml")
         self.sig_enet_mdio = self.root.findall(".//SignalDesign[@Name='ENET_MDIO']")
         self.all_signals = self.root.findall(".//SignalDesign[@IsChecked='true']")
 
