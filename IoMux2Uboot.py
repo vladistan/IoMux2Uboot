@@ -92,11 +92,14 @@ def main(input_file):
     # Write pad setup and comment to file
     w = open('results', 'w')
 
-    #for i in range(0, len(addresses)):
-    #	pins = pinDict[addresses[i]];
-    #	mode = int(alts[i])
-    #	comment = names[i] + "--" + nets[i]
-    #	w.write('mxc_iomux_v3_setup_pad(%s) // %s\n' % (pins[mode], comment));
+    for instance in pad_dict:
+        w.write('void setup_%s(){\n' % instance)
+        for address in pad_dict[instance]:
+            mode = int(pad_dict[instance][address][2])
+            pin = pin_dict[address][mode]
+            comment = pad_dict[instance][address][0] + " -- " + pad_dict[instance][address][1]
+            w.write('\tmxc_iomux_v3_setup_pad(%s) // %s\n' % (pin, comment))
+        w.write('}\n\n')
 
     w.close()
 
