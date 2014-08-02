@@ -6,6 +6,7 @@ Unit tests for conversion script
 __author__ = 'vlad'
 
 from unittest import TestCase
+from mock import Mock
 
 from IoMux2Uboot import *
 
