@@ -24,6 +24,10 @@ def dump_pin_dict(pin_dict):
     """
     Dump contents of Pin Dictionary for debugging purposes
     """
+
+    if not DEBUG:
+        return
+
     w = open('pinDict.dmp', 'w')
     [w.write('%s: %s\n' % (pin, pin_dict[pin])) for pin in pin_dict]
     w.flush()
@@ -34,8 +38,11 @@ def dump_iomux(pad_dict):
     """
     Dump contents of IOMUx dictionary for debugging purposes
     """
+    if not DEBUG:
+        return
+
     w = open('iomux.dmp', 'w')
-    for instance in pad_dict:
+    for instance in sorted(pad_dict):
         for address in pad_dict[instance]:
             pad = pad_dict[instance][address]
             w.write('Instance: %8s, Address: @ %s, Name: %20s, Net: %16s, Mode: %1s\n' % (
@@ -70,8 +77,7 @@ def main(input_file):
                     pad_dict[instance] = dict()
                     pad_dict[instance][address] = [name, net, mode]
 
-    if DEBUG:
-        dump_iomux(pad_dict)
+    dump_iomux(pad_dict)
 
     chip_type = root.find(".//Chip").text
     if 'DL' in chip_type:
@@ -96,6 +102,7 @@ def main(input_file):
             except KeyError:
                 pin_dict[addr] = dict()
                 pin_dict[addr][mode] = name
+
     dump_pin_dict(pin_dict)
 
     # Write pad setup and comment to file
