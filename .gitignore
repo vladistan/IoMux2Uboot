@@ -1,4 +1,5 @@
 DCD_Commands.c
+*.dmp
 *.swp
 /Berksfile.lock
 /.vagrant/

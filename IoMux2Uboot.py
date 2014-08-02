@@ -23,7 +23,7 @@ def dump_pin_dict(pin_dict):
     """
     Dump contents of Pin Dictionary for debugging purposes
     """
-    w = open('pinDict', 'w')
+    w = open('pinDict.dmp', 'w')
     [w.write('%s: %s\n' % (pin, pin_dict[pin])) for pin in pin_dict]
     w.close()
 
@@ -32,7 +32,7 @@ def dump_iomux(pad_dict):
     """
     Dump contents of IOMUx dictionary for debugging purposes
     """
-    w = open('iomux', 'w')
+    w = open('iomux.dmp', 'w')
     for instance in pad_dict:
         for address in pad_dict[instance]:
             pad = pad_dict[instance][address]
@@ -90,7 +90,7 @@ def main(input_file):
         dump_pin_dict(pin_dict)
 
     # Write pad setup and comment to file
-    w = open('results', 'w')
+    w = open('DCD_commands.c', 'w')
 
     for instance in pad_dict:
         w.write('void setup_%s(){\n' % instance)
