@@ -128,6 +128,24 @@ class ParserTest(TestCase):
 
         self.assertEqual(len(self.all_signals), 330)
 
+    def test_how_many_signals_are_not_sw_ctl_pads(self):
+
+        rt = self.root.findall("./SignalDesign/Register")
+
+        self.assertEquals(len(rt), 1079)
+
+        no_pad_ctl = [x for x in rt if not 'SW_PAD_CTL_PAD' in x.get('Name')  ]
+        self.assertEquals(len(no_pad_ctl), 813)
+
+        no_mux_ctl = [x for x in no_pad_ctl if not 'SW_MUX_CTL_PAD' in x.get('Name')  ]
+        self.assertEquals(len(no_mux_ctl), 600)
+
+        no_ctl_grp = [x.get('Name') for x in no_mux_ctl if not 'SW_PAD_CTL_GRP' in x.get('Name')  ]
+        self.assertEquals(len(no_ctl_grp), 46)
+        #TODO: Find out what to do with missing signals
+
+
+
     def test_how_many_signals_have_alt_routing(self):
 
         rt = self.root.findall("./SignalDesign/Routing")
