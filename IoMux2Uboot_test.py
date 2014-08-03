@@ -246,6 +246,52 @@ class ChipTypeTest(TestCase):
         self.assertEquals(fname, "headers/mx6sl_pins.h")
 
 
+class ComprehensiveInputTest(TestCase):
+
+    def test_read_iomux(self):
+
+        chip, pads = IoMux2Uboot.process_iomux('samples/i.MX6SDL_Sabre_AI_RevA.IomuxDesign.xml')
+        self.assertEquals(chip,"i.MX6SDL")
+
+        enet_regs = {'06B4': ['RGMII_TD2', 'RGMII_TD2', '1'],
+                     '06B0': ['RGMII_TD1', 'RGMII_TD1', '1'],
+                     '06A8': ['RGMII_RXC', 'RGMII_RXC', '1'],
+                     '069C': ['RGMII_RD2', 'RGMII_RD2', '1'],
+                     '06C0': ['RGMII_TXC', 'RGMII_TXC', '1'],
+                     '06A4': ['RGMII_RX_CTL', 'RGMII_RX_CTL', '1'],
+                     '06BC': ['RGMII_TX_CTL', 'RGMII_TX_CTL', '1'],
+                     '06B8': ['RGMII_TD3', 'RGMII_TD3', '1'],
+                     '06A0': ['RGMII_RD3', 'RGMII_RD3', '1'],
+                     '05C0': ['ENET_TX_CLK', 'ENET_REF_CLK', '1'],
+                     '0694': ['RGMII_RD0', 'RGMII_RD0', '1'],
+                     '0634': ['ENET_MDC', 'KEY_COL2', '4'],
+                     '0630': ['ENET_MDIO', 'KEY_COL1', '1'],
+                     '0698': ['RGMII_RD1', 'RGMII_RD1', '1'],
+                     '06AC': ['RGMII_TD0', 'RGMII_TD0', '1']}
+
+
+        self.assertDictContainsSubset({'enet': enet_regs}, pads)
+
+
+    def test_read_pins(self):
+
+        pins = IoMux2Uboot.process_pins("iMX6DL")
+
+        CSI0_DAT10 = {"0360": {0: 'MX6DL_PAD_CSI0_DAT10__IPU1_CSI0_D_10',
+                               1: 'MX6DL_PAD_CSI0_DAT10__AUDMUX_AUD3_RXC',
+                               2: 'MX6DL_PAD_CSI0_DAT10__ECSPI2_MISO',
+                               3: 'MX6DL_PAD_CSI0_DAT10__UART1_RXD',
+                               4: 'MX6DL_PAD_CSI0_DAT10__SDMA_DEBUG_PC_4',
+                               5: 'MX6DL_PAD_CSI0_DAT10__GPIO_5_28',
+                               6: 'MX6DL_PAD_CSI0_DAT10__MMDC_MMDC_DEBUG_33',
+                               7: 'MX6DL_PAD_CSI0_DAT10__SIMBA_TRACE_7'}}
+
+        self.assertDictContainsSubset(CSI0_DAT10, pins)
+
+
+
+
+
 class ParserTest(TestCase):
 
     def setUp(self):
