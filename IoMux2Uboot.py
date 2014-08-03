@@ -70,15 +70,17 @@ def append_pad(pad_dict, instance, address, name, net, mode):
         pad_dict[instance][address] = [name, net, mode]
 
 
-def process_registers(pad_dict, register, signal):
+def process_registers(pad_dict, signal, register):
     sig_routing = signal.find(".//Routing")
-    if 'SW_PAD_CTL_PAD' in register.get('Name') and 'ALT' in sig_routing.get('mode'):
+    signal_mode = sig_routing.get('mode')
+    if 'SW_PAD_CTL_PAD' in register.get('Name') and 'ALT' in signal_mode:
         address = register.get('Address')[6:]
         name = signal.get('Name')
         net = sig_routing.get('padNet')[7:]
-        mode = sig_routing.get('mode')[-1:]
+        mode = signal_mode[-1:]
         instance = signal.get('Instance')
         append_pad(pad_dict, instance, address, name, net, mode)
+
 
 
 def write_pad_dict(pad_dict, pin_dict):
@@ -118,7 +120,7 @@ def process_iomux(input_file):
     signals = root.findall(".//SignalDesign[@IsChecked='true']")
     for signal in signals:
         for register in signal.findall(".//Register"):
-            process_registers(pad_dict, register, signal)
+            process_registers(pad_dict, signal, register)
     chip_type = root.find(".//Chip").text
     return chip_type, pad_dict
 

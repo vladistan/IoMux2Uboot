@@ -6,10 +6,11 @@ Unit tests for conversion script
 __author__ = 'vlad'
 
 from unittest import TestCase
-from mock import patch, call
+from mock import patch, call, Mock
 from mock import mock_open
 
 import IoMux2Uboot
+
 
 
 class PadDictTest(TestCase):
@@ -30,6 +31,59 @@ class PadDictTest(TestCase):
         IoMux2Uboot.append_pad(pad_dict, 'bill', 3,  9, 7, 3)
 
         self.assertDictEqual(pad_dict, {'bill': {3: [9, 7, 3]}, 'bob': {1: [1, 2, 4]}})
+
+
+class ProcessRegistersTest(TestCase):
+
+    def setUp(self):
+        pass
+
+    def setup_mocks(self, padname, altname):
+
+        routing = Mock(name="SigRouting")
+
+        def sig_se(*args):
+            if args == ('.//Routing',):
+                return routing
+
+        signal = Mock(side_effect=sig_se)
+        register = Mock()
+        register.get = Mock(return_value=padname)
+
+        routing.get = Mock(name="GET", return_value=altname)
+        signal.find = Mock(side_effect=sig_se)
+
+        return register, signal
+
+    def test_that_only_regs_with_alt_and_ctl_pad_are_processed(self):
+
+        register, signal = self.setup_mocks("SW_PAD_CTL_PAD", "BOB")
+        append_pad = Mock()
+
+        with patch('IoMux2Uboot.append_pad', append_pad):
+            IoMux2Uboot.process_registers(5, signal, register)
+
+        self.assertFalse(append_pad.called)
+
+    def test_append_pad_is_called_when_correct_alt_ctl_pad_are_present(self):
+
+        register, signal = self.setup_mocks("SW_PAD_CTL_PAD", "ALT5")
+        append_pad = Mock()
+
+        with patch('IoMux2Uboot.append_pad', append_pad):
+            IoMux2Uboot.process_registers(5, signal, register)
+
+        self.assertTrue(append_pad.called)
+
+    def test_append_pad_is_never_called_when_alt_ctl_pad_is_not_there(self):
+
+        register, signal = self.setup_mocks("SW_PAD_CTL_PAD", "BOB")
+        append_pad = Mock()
+
+        with patch('IoMux2Uboot.append_pad', append_pad):
+            IoMux2Uboot.process_registers(5, signal, register)
+
+        self.assertFalse(append_pad.called)
 
 
 class DebugTest(TestCase):
