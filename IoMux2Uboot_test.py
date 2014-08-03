@@ -6,7 +6,7 @@ Unit tests for conversion script
 __author__ = 'vlad'
 
 from unittest import TestCase
-from mock import patch, call, Mock, ANY
+from mock import patch, call, Mock
 from mock import mock_open
 
 import IoMux2Uboot
@@ -18,10 +18,10 @@ class PadDictTest(TestCase):
     Tests For pad dictionary methods
     """
 
-    def setUp(self):
-        pass
-
     def test_append_pad_to_existing_instance(self):
+        """
+        Test whether appending pad to existing instance works
+        """
 
         pad_dict = {'bob': {1: [1, 2, 4]}}
         IoMux2Uboot.append_pad(pad_dict, 'bob', 3,  9, 7, 3)
@@ -29,6 +29,9 @@ class PadDictTest(TestCase):
         self.assertDictEqual(pad_dict, {'bob': {3: [9, 7, 3], 1: [1, 2, 4]}})
 
     def test_append_pad_to_new_instance(self):
+        """
+        Test whether appending pad to non-existing instance creates the instance as well
+        """
 
         pad_dict = {'bob': {1: [1, 2, 4]}}
         IoMux2Uboot.append_pad(pad_dict, 'bill', 3,  9, 7, 3)
@@ -49,7 +52,7 @@ class PinDictTest(TestCase):
         pin_dict = {1: {'bob': 4}}
         IoMux2Uboot.append_pin(pin_dict, 1, 'sam', 7)
 
-        self.assertDictEqual(pin_dict, { 1: {'bob': 4, 'sam': 7}})
+        self.assertDictEqual(pin_dict, {1: {'bob': 4, 'sam': 7}})
 
     def test_append_pad_to_new_instance(self):
 
@@ -62,13 +65,12 @@ class PinDictTest(TestCase):
 class ParsePinLineTest(TestCase):
 
     def test_parsing_of_two_line_pin(self):
-
-        lines = [  "#define MX6DL_PAD_CSI0_DAT13__SDMA_DEBUG_PC_7                                  \\",
-		           "        IOMUX_PAD(0x036C, 0x0058, 4, 0x0000, 0, NO_PAD_CTRL)" ]
+        lines = ["#define MX6DL_PAD_CSI0_DAT13__SDMA_DEBUG_PC_7                                  \\",
+                 "        IOMUX_PAD(0x036C, 0x0058, 4, 0x0000, 0, NO_PAD_CTRL)"]
 
         rv = IoMux2Uboot.parse_pin_line(lines, 0)
 
-        self.assertEquals(rv, ('036C', 4, "MX6DL_PAD_CSI0_DAT13__SDMA_DEBUG_PC_7") )
+        self.assertEquals(rv, ('036C', 4, "MX6DL_PAD_CSI0_DAT13__SDMA_DEBUG_PC_7"))
 
 
 class ProcessRegistersTest(TestCase):
@@ -89,7 +91,6 @@ class ProcessRegistersTest(TestCase):
                 return 'AUD5_RXD'
 
             return "Sig:Unknown"
-
 
         def reg_se(*args):
             if args == ('Name',):
@@ -112,8 +113,7 @@ class ProcessRegistersTest(TestCase):
 
         routing.get = Mock(side_effect=route_se)
         signal.find = Mock(side_effect=sig_se)
-        signal.get  = Mock(side_effect=sig_se)
-
+        signal.get = Mock(side_effect=sig_se)
 
         return register, signal
 
@@ -211,21 +211,24 @@ class DebugTest(TestCase):
 
         h.write.assert_has_calls(calls)
 
+
 class PinInfoFromPadTest(TestCase):
 
     def test_pin_info_from_pad(self):
 
-        pad_dict = {'audmux' : {'03B4': ['AUD6_TXC', 'DI0_PIN15', '2']}}
+        pad_dict = {'audmux': {'03B4': ['AUD6_TXC', 'DI0_PIN15', '2']}}
 
-        pin_dict = {"03B4":  {
-                              1: 'MX6DL_PAD_DI0_PIN15__LCDIF_ENABLE',
-                              2: 'MX6DL_PAD_DI0_PIN15__AUDMUX_AUD6_TXC',
-                              3: 'MX6DL_PAD_DI0_PIN15__MIPI_CORE_DPHY_TEST_OUT_29',
-                              }}
+        pin_dict = {"03B4":
+                        {
+                            1: 'MX6DL_PAD_DI0_PIN15__LCDIF_ENABLE',
+                            2: 'MX6DL_PAD_DI0_PIN15__AUDMUX_AUD6_TXC',
+                            3: 'MX6DL_PAD_DI0_PIN15__MIPI_CORE_DPHY_TEST_OUT_29',
+                        }
+                   }
 
         rv = IoMux2Uboot.pin_info_from_pad(pad_dict,pin_dict,"audmux",'03B4')
 
-        self.assertEquals(rv,('AUD6_TXC -- DI0_PIN15','MX6DL_PAD_DI0_PIN15__AUDMUX_AUD6_TXC'))
+        self.assertEquals(rv, ('AUD6_TXC -- DI0_PIN15', 'MX6DL_PAD_DI0_PIN15__AUDMUX_AUD6_TXC'))
 
 
 class ChipTypeTest(TestCase):
@@ -251,7 +254,7 @@ class ComprehensiveInputTest(TestCase):
     def test_read_iomux(self):
 
         chip, pads = IoMux2Uboot.process_iomux('samples/i.MX6SDL_Sabre_AI_RevA.IomuxDesign.xml')
-        self.assertEquals(chip,"i.MX6SDL")
+        self.assertEquals(chip, "i.MX6SDL")
 
         enet_regs = {'06B4': ['RGMII_TD2', 'RGMII_TD2', '1'],
                      '06B0': ['RGMII_TD1', 'RGMII_TD1', '1'],
@@ -269,15 +272,13 @@ class ComprehensiveInputTest(TestCase):
                      '0698': ['RGMII_RD1', 'RGMII_RD1', '1'],
                      '06AC': ['RGMII_TD0', 'RGMII_TD0', '1']}
 
-
         self.assertDictContainsSubset({'enet': enet_regs}, pads)
-
 
     def test_read_pins(self):
 
         pins = IoMux2Uboot.process_pins("iMX6DL")
 
-        CSI0_DAT10 = {"0360": {0: 'MX6DL_PAD_CSI0_DAT10__IPU1_CSI0_D_10',
+        csi0_dat10 = {"0360": {0: 'MX6DL_PAD_CSI0_DAT10__IPU1_CSI0_D_10',
                                1: 'MX6DL_PAD_CSI0_DAT10__AUDMUX_AUD3_RXC',
                                2: 'MX6DL_PAD_CSI0_DAT10__ECSPI2_MISO',
                                3: 'MX6DL_PAD_CSI0_DAT10__UART1_RXD',
@@ -286,10 +287,7 @@ class ComprehensiveInputTest(TestCase):
                                6: 'MX6DL_PAD_CSI0_DAT10__MMDC_MMDC_DEBUG_33',
                                7: 'MX6DL_PAD_CSI0_DAT10__SIMBA_TRACE_7'}}
 
-        self.assertDictContainsSubset(CSI0_DAT10, pins)
-
-
-
+        self.assertDictContainsSubset(csi0_dat10, pins)
 
 
 class ParserTest(TestCase):
@@ -313,17 +311,15 @@ class ParserTest(TestCase):
 
         self.assertEquals(len(rt), 1079)
 
-        no_pad_ctl = [x for x in rt if not 'SW_PAD_CTL_PAD' in x.get('Name')  ]
+        no_pad_ctl = [x for x in rt if not 'SW_PAD_CTL_PAD' in x.get('Name')]
         self.assertEquals(len(no_pad_ctl), 813)
 
-        no_mux_ctl = [x for x in no_pad_ctl if not 'SW_MUX_CTL_PAD' in x.get('Name')  ]
+        no_mux_ctl = [x for x in no_pad_ctl if not 'SW_MUX_CTL_PAD' in x.get('Name')]
         self.assertEquals(len(no_mux_ctl), 600)
 
-        no_ctl_grp = [x.get('Name') for x in no_mux_ctl if not 'SW_PAD_CTL_GRP' in x.get('Name')  ]
+        no_ctl_grp = [x.get('Name') for x in no_mux_ctl if not 'SW_PAD_CTL_GRP' in x.get('Name')]
         self.assertEquals(len(no_ctl_grp), 46)
         #TODO: Find out what to do with missing signals
-
-
 
     def test_how_many_signals_have_alt_routing(self):
 
