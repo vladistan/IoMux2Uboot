@@ -12,7 +12,6 @@ from mock import mock_open
 import IoMux2Uboot
 
 
-
 class PadDictTest(TestCase):
     """
     Tests For pad dictionary methods
@@ -24,7 +23,7 @@ class PadDictTest(TestCase):
         """
 
         pad_dict = {'bob': {1: [1, 2, 4]}}
-        IoMux2Uboot.append_pad(pad_dict, 'bob', 3,  9, 7, 3)
+        IoMux2Uboot.append_pad(pad_dict, 'bob', 3, 9, 7, 3)
 
         self.assertDictEqual(pad_dict, {'bob': {3: [9, 7, 3], 1: [1, 2, 4]}})
 
@@ -34,7 +33,7 @@ class PadDictTest(TestCase):
         """
 
         pad_dict = {'bob': {1: [1, 2, 4]}}
-        IoMux2Uboot.append_pad(pad_dict, 'bill', 3,  9, 7, 3)
+        IoMux2Uboot.append_pad(pad_dict, 'bill', 3, 9, 7, 3)
 
         self.assertDictEqual(pad_dict, {'bill': {3: [9, 7, 3]}, 'bob': {1: [1, 2, 4]}})
 
@@ -44,10 +43,10 @@ class PinDictTest(TestCase):
     Tests for Pin dictionary
     """
 
-    def setUp(self):
-        pass
-
     def test_append_pad_to_existing_instance(self):
+        """
+        Test that we can append pad to the existing instance
+        """
 
         pin_dict = {1: {'bob': 4}}
         IoMux2Uboot.append_pin(pin_dict, 1, 'sam', 7)
@@ -55,6 +54,10 @@ class PinDictTest(TestCase):
         self.assertDictEqual(pin_dict, {1: {'bob': 4, 'sam': 7}})
 
     def test_append_pad_to_new_instance(self):
+        """
+        Test that we can append pad to the new instance
+        And the new instnace is created
+        """
 
         pin_dict = {1: {'bob': 4}}
         IoMux2Uboot.append_pin(pin_dict, 3, 'sam', 7)
@@ -63,63 +66,34 @@ class PinDictTest(TestCase):
 
 
 class ParsePinLineTest(TestCase):
+    """
+    Tests for parsers of Pin lines
+    """
 
     def test_parsing_of_two_line_pin(self):
+        """
+        Test that we can parse two line pin definition
+        """
         lines = ["#define MX6DL_PAD_CSI0_DAT13__SDMA_DEBUG_PC_7                                  \\",
                  "        IOMUX_PAD(0x036C, 0x0058, 4, 0x0000, 0, NO_PAD_CTRL)"]
 
-        rv = IoMux2Uboot.parse_pin_line(lines, 0)
+        pin_data = IoMux2Uboot.parse_pin_line(lines, 0)
 
-        self.assertEquals(rv, ('036C', 4, "MX6DL_PAD_CSI0_DAT13__SDMA_DEBUG_PC_7"))
+        self.assertEquals(pin_data, ('036C', 4, "MX6DL_PAD_CSI0_DAT13__SDMA_DEBUG_PC_7"))
 
 
 class ProcessRegistersTest(TestCase):
+    """
+    Tests for registers processing
+    """
 
-    def setUp(self):
-        pass
-
-    def setup_mocks(self, padname, altname):
-
-        routing = Mock(name="SigRouting")
-
-        def sig_se(*args):
-            if args == ('.//Routing',):
-                return routing
-            if args == ('Instance',):
-                return "audmux"
-            if args == ('Name',):
-                return 'AUD5_RXD'
-
-            return "Sig:Unknown"
-
-        def reg_se(*args):
-            if args == ('Name',):
-                return padname
-            if args == ('Address',):
-                return "0x020E03F0"
-
-            return "Reg:Unknown"
-
-        def route_se(*args):
-
-            if args == ('mode',):
-                return altname
-            if args == ('padNet',):
-                return "padNet.DISP0_DATA19"
-
-        signal = Mock(side_effect=sig_se)
-        register = Mock()
-        register.get = Mock(side_effect=reg_se)
-
-        routing.get = Mock(side_effect=route_se)
-        signal.find = Mock(side_effect=sig_se)
-        signal.get = Mock(side_effect=sig_se)
-
-        return register, signal
 
     def test_that_only_regs_with_alt_and_ctl_pad_are_processed(self):
+        """
+        Test that we don't process pads that are not controllable
+        """
 
-        register, signal = self.setup_mocks("SW_PAD_CTL_PAD", "BOB")
+        register, signal = setup_mocks("SW_PAD_CTL_PAD", "BOB")
         append_pad = Mock()
 
         with patch('IoMux2Uboot.append_pad', append_pad):
@@ -127,9 +101,12 @@ class ProcessRegistersTest(TestCase):
 
         self.assertFalse(append_pad.called)
 
-    def test_append_pad_is_called_when_correct_alt_ctl_pad_are_present(self):
+    def test_append_pad_is_called_when_alt_ctl_pad_is_there(self):
+        """
+        Test we appending the pads when SW_PAD_CTL_PAD and ALT mode are present
+        """
 
-        register, signal = self.setup_mocks("SW_PAD_CTL_PAD", "ALT5")
+        register, signal = setup_mocks("SW_PAD_CTL_PAD", "ALT5")
         append_pad = Mock()
 
         with patch('IoMux2Uboot.append_pad', append_pad):
@@ -138,8 +115,11 @@ class ProcessRegistersTest(TestCase):
         self.assertTrue(append_pad.called)
 
     def test_append_has_correct_args(self):
+        """
+        Test we appending pads correctly
+        """
 
-        register, signal = self.setup_mocks("SW_PAD_CTL_PAD", "ALT5")
+        register, signal = setup_mocks("SW_PAD_CTL_PAD", "ALT5")
         append_pad = Mock()
 
         with patch('IoMux2Uboot.append_pad', append_pad):
@@ -149,17 +129,81 @@ class ProcessRegistersTest(TestCase):
         append_pad.assert_has_calls(calls)
 
 
+def setup_mocks(padname, altname):
+    """
+     Setup parser mocks
+    """
+
+    routing = Mock(name="SigRouting")
+
+    def sig_se(*args):
+        """
+        Mock method for Signal
+        """
+        if args == ('.//Routing',):
+            return routing
+        if args == ('Instance',):
+            return "audmux"
+        if args == ('Name',):
+            return 'AUD5_RXD'
+
+        return "Sig:Unknown"
+
+    def reg_se(*args):
+        """
+        Mock method for registers
+        """
+        if args == ('Name',):
+            return padname
+        if args == ('Address',):
+            return "0x020E03F0"
+
+        return "Reg:Unknown"
+
+    def route_se(*args):
+        """
+        Mock method for routing
+        """
+
+        if args == ('mode',):
+            return altname
+        if args == ('padNet',):
+            return "padNet.DISP0_DATA19"
+
+    signal = Mock(side_effect=sig_se)
+    register = Mock()
+    register.get = Mock(side_effect=reg_se)
+
+    routing.get = Mock(side_effect=route_se)
+    signal.find = Mock(side_effect=sig_se)
+    signal.get = Mock(side_effect=sig_se)
+
+    return register, signal
+
+
 class DebugTest(TestCase):
+    """
+    Test for debug dumpers
+    """
 
     def setUp(self):
+        """
+        Setup mock and save debug settings
+        """
         self.open = mock_open()
         self.save_debug = IoMux2Uboot
 
     def tearDown(self):
+        """
+        Restore debug settings between test cases
+        """
 
         IoMux2Uboot.DEBUG = self.save_debug
 
     def test_when_debug_is_false_should_not_write_pindict(self):
+        """
+        Test that we don't write Pindict if debug is off
+        """
 
         IoMux2Uboot.DEBUG = False
 
@@ -169,17 +213,23 @@ class DebugTest(TestCase):
         self.assertFalse(self.open.called)
 
     def test_pin_dict_write_dict(self):
+        """
+        Test that we write PIN dict correctly
+        """
 
         with patch('IoMux2Uboot.open', self.open, create=True):
             IoMux2Uboot.dump_pin_dict({1: {1: "BOB", 2: "BOLL"}, 2: {2: "JANE", 314: "PETE"}})
 
         self.open.assert_called_once_with("pinDict.dmp", "w")
-        h = self.open()
+        handle = self.open()
 
         calls = [call.write("1: {1: 'BOB', 2: 'BOLL'}\n"), call().write("2: {2: 'JANE', 314: 'PETE'}\n")]
-        h.write.assert_has_calls(calls)
+        handle.write.assert_has_calls(calls)
 
     def test_when_debug_is_false_should_not_write_iomux(self):
+        """
+        Test that we don't write IOMUX dump if debug is off
+        """
 
         IoMux2Uboot.DEBUG = False
 
@@ -189,32 +239,39 @@ class DebugTest(TestCase):
         self.assertFalse(self.open.called)
 
     def test_write_iomux(self):
-
-        iomux_dict = {'audmux':
-                       {
-                           '03BC': ['AUD6_TXFS', 'DI0_PIN03', '2'],
-                           '03C0': ['AUD6_RXD', 'DI0_PIN04', '2'],
-                           '03E4': ['AUD5_TXC', 'DISP0_DATA16', '3'],
-                           '03F0': ['AUD5_RXD', 'DISP0_DATA19', '3'],
-                       }}
+        """
+        Test for writing iomux
+        """
+        iomux_dict = {'audmux': {
+            '03BC': ['AUD6_TXFS', 'DI0_PIN03', '2'],
+            '03C0': ['AUD6_RXD', 'DI0_PIN04', '2'],
+            '03E4': ['AUD5_TXC', 'DISP0_DATA16', '3'],
+            '03F0': ['AUD5_RXD', 'DISP0_DATA19', '3'],
+                          }}
 
         with patch('IoMux2Uboot.open', self.open, create=True):
             IoMux2Uboot.dump_iomux(iomux_dict)
 
         self.open.assert_called_once_with("iomux.dmp", "w")
-        h = self.open()
+        handle = self.open()
 
         calls = [
             call('Instance:   audmux, Address: @ 03E4, Name:             AUD5_TXC, Net:     DISP0_DATA16, Mode: 3\n'),
             call('Instance:   audmux, Address: @ 03BC, Name:            AUD6_TXFS, Net:        DI0_PIN03, Mode: 2\n')
         ]
 
-        h.write.assert_has_calls(calls)
+        handle.write.assert_has_calls(calls)
 
 
 class PinInfoFromPadTest(TestCase):
+    """
+    Tests for pin info from pads
+    """
 
     def test_pin_info_from_pad(self):
+        """
+        See if we get correct pin info from the pad
+        """
 
         pad_dict = {'audmux': {'03B4': ['AUD6_TXC', 'DI0_PIN15', '2']}}
 
@@ -226,23 +283,32 @@ class PinInfoFromPadTest(TestCase):
                         }
                    }
 
-        rv = IoMux2Uboot.pin_info_from_pad(pad_dict,pin_dict,"audmux",'03B4')
+        pin_info = IoMux2Uboot.pin_info_from_pad(pad_dict, pin_dict, "audmux", '03B4')
 
-        self.assertEquals(rv, ('AUD6_TXC -- DI0_PIN15', 'MX6DL_PAD_DI0_PIN15__AUDMUX_AUD6_TXC'))
+        self.assertEquals(pin_info, ('AUD6_TXC -- DI0_PIN15', 'MX6DL_PAD_DI0_PIN15__AUDMUX_AUD6_TXC'))
 
 
 class ChipTypeTest(TestCase):
+    """
+        Tests for chip type selection
+    """
 
     def setUp(self):
         pass
 
     def test_correct_filename_for_dl(self):
+        """
+        Test to see if we get correct name for DL type of chips
+        """
 
         fname = IoMux2Uboot.get_header_filename("DL")
 
         self.assertEquals(fname, "headers/mx6dl_pins.h")
 
     def test_correct_filename_for_sl(self):
+        """
+        Test to see if we get correct name for SL type of chips
+        """
 
         fname = IoMux2Uboot.get_header_filename("SL")
 
@@ -250,8 +316,14 @@ class ChipTypeTest(TestCase):
 
 
 class ComprehensiveInputTest(TestCase):
+    """
+        Comprehensive tests of readers and parsers
+    """
 
     def test_read_iomux(self):
+        """
+        Test that we read IOMUX correctly
+        """
 
         chip, pads = IoMux2Uboot.process_iomux('samples/i.MX6SDL_Sabre_AI_RevA.IomuxDesign.xml')
         self.assertEquals(chip, "i.MX6SDL")
@@ -275,6 +347,9 @@ class ComprehensiveInputTest(TestCase):
         self.assertDictContainsSubset({'enet': enet_regs}, pads)
 
     def test_read_pins(self):
+        """
+        Test that we read pins correctly
+        """
 
         pins = IoMux2Uboot.process_pins("iMX6DL")
 
@@ -291,6 +366,10 @@ class ComprehensiveInputTest(TestCase):
 
 
 class ParserTest(TestCase):
+    """
+        Test for parser of IOMUX
+        Examine the structure of MX6SDL Eval Board Rev A
+    """
 
     def setUp(self):
         self.root = IoMux2Uboot.parse_iomux("samples/i.MX6SDL_Sabre_AI_RevA.IomuxDesign.xml")
@@ -298,20 +377,29 @@ class ParserTest(TestCase):
         self.all_signals = self.root.findall(".//SignalDesign[@IsChecked='true']")
 
     def test_must_be_330_checked_signals(self):
+        """
+            Test file should have 330 checked signals
+        """
         checked_signals = self.root.findall(".//SignalDesign[@IsChecked='true']")
         self.assertEqual(len(checked_signals), 330)
 
     def test_must_be_330_total_signals(self):
+        """
+            Test file should have 330 signals in total
+        """
 
         self.assertEqual(len(self.all_signals), 330)
 
     def test_how_many_signals_are_not_sw_ctl_pads(self):
+        """
+            Check how many RT signals have no SW_PAD_CTL
+        """
 
-        rt = self.root.findall("./SignalDesign/Register")
+        routes = self.root.findall("./SignalDesign/Register")
 
-        self.assertEquals(len(rt), 1079)
+        self.assertEquals(len(routes), 1079)
 
-        no_pad_ctl = [x for x in rt if not 'SW_PAD_CTL_PAD' in x.get('Name')]
+        no_pad_ctl = [x for x in routes if not 'SW_PAD_CTL_PAD' in x.get('Name')]
         self.assertEquals(len(no_pad_ctl), 813)
 
         no_mux_ctl = [x for x in no_pad_ctl if not 'SW_MUX_CTL_PAD' in x.get('Name')]
@@ -322,13 +410,16 @@ class ParserTest(TestCase):
         #TODO: Find out what to do with missing signals
 
     def test_how_many_signals_have_alt_routing(self):
+        """
+            Check how many rt signals have no routing
+        """
 
-        rt = self.root.findall("./SignalDesign/Routing")
+        routes = self.root.findall("./SignalDesign/Routing")
 
-        self.assertEquals(len(rt), 330)
+        self.assertEquals(len(routes), 330)
 
         # There should be 117 signal w/o routing
-        no_alt = [x.get('padNet') for x in rt if not "ALT" in x.get("mode")]
+        no_alt = [x.get('padNet') for x in routes if not "ALT" in x.get("mode")]
         self.assertEquals(len(no_alt), 117)
 
         # There should be 111 signal w/o routing that belong to DRAM
