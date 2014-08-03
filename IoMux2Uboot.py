@@ -82,15 +82,19 @@ def process_registers(pad_dict, signal, register):
         append_pad(pad_dict, instance, address, name, net, mode)
 
 
+def pin_info_from_pad(pad_dict, pin_dict, instance, address):
+    mode = int(pad_dict[instance][address][2])
+    pin = pin_dict[address][mode]
+    comment = pad_dict[instance][address][0] + " -- " + pad_dict[instance][address][1]
+    return comment, pin
+
 
 def write_pad_dict(pad_dict, pin_dict):
     w = open('DCD_commands.c', 'w')
     for instance in pad_dict:
         w.write('void setup_%s(){\n' % instance)
         for address in pad_dict[instance]:
-            mode = int(pad_dict[instance][address][2])
-            pin = pin_dict[address][mode]
-            comment = pad_dict[instance][address][0] + " -- " + pad_dict[instance][address][1]
+            comment, pin = pin_info_from_pad(pad_dict, pin_dict, instance, address)
             w.write('\tmxc_iomux_v3_setup_pad(%s) // %s\n' % (pin, comment))
         w.write('}\n\n')
     w.close()

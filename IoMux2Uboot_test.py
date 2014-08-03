@@ -211,6 +211,22 @@ class DebugTest(TestCase):
 
         h.write.assert_has_calls(calls)
 
+class PinInfoFromPadTest(TestCase):
+
+    def test_pin_info_from_pad(self):
+
+        pad_dict = {'audmux' : {'03B4': ['AUD6_TXC', 'DI0_PIN15', '2']}}
+
+        pin_dict = {"03B4":  {
+                              1: 'MX6DL_PAD_DI0_PIN15__LCDIF_ENABLE',
+                              2: 'MX6DL_PAD_DI0_PIN15__AUDMUX_AUD6_TXC',
+                              3: 'MX6DL_PAD_DI0_PIN15__MIPI_CORE_DPHY_TEST_OUT_29',
+                              }}
+
+        rv = IoMux2Uboot.pin_info_from_pad(pad_dict,pin_dict,"audmux",'03B4')
+
+        self.assertEquals(rv,('AUD6_TXC -- DI0_PIN15','MX6DL_PAD_DI0_PIN15__AUDMUX_AUD6_TXC'))
+
 
 class ChipTypeTest(TestCase):
 
