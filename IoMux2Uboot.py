@@ -92,6 +92,9 @@ def process_registers(pad_dict, signal, register):
 
 
 def pin_info_from_pad(pad_dict, pin_dict, instance, address):
+    """
+    Extract pin information given the pad
+    """
     mode = int(pad_dict[instance][address][2])
     pin = pin_dict[address][mode]
     comment = pad_dict[instance][address][0] + " -- " + pad_dict[instance][address][1]
@@ -99,17 +102,23 @@ def pin_info_from_pad(pad_dict, pin_dict, instance, address):
 
 
 def write_pad_dict(pad_dict, pin_dict):
-    w = open('DCD_commands.c', 'w')
+    """
+    Write IOMux definition to the UBoot C file
+    """
+    out = open('DCD_commands.c', 'w')
     for instance in pad_dict:
-        w.write('void setup_%s(){\n' % instance)
+        out.write('void setup_%s(){\n' % instance)
         for address in pad_dict[instance]:
             comment, pin = pin_info_from_pad(pad_dict, pin_dict, instance, address)
-            w.write('\tmxc_iomux_v3_setup_pad(%s) // %s\n' % (pin, comment))
-        w.write('}\n\n')
-    w.close()
+            out.write('\tmxc_iomux_v3_setup_pad(%s) // %s\n' % (pin, comment))
+        out.write('}\n\n')
+    out.close()
 
 
 def append_pin(pin_dict, addr, mode, name):
+    """
+    Append pin difinition to the dictionary giving the instance addr if necessary
+    """
     try:
         pin_dict[addr][mode] = name
     except KeyError:
@@ -118,6 +127,9 @@ def append_pin(pin_dict, addr, mode, name):
 
 
 def parse_pin_line(pins, i):
+    """
+    Parse pin infromation from the UBoot header file
+    """
     name = pins[i][8:].split()[0]
     addr = pins[i + 1].strip()[12:].split(',')[0]
     mode = int(pins[i + 1].strip()[12:].split(',')[2].strip().split('|')[0].strip())
@@ -125,6 +137,9 @@ def parse_pin_line(pins, i):
 
 
 def process_pins(chip_type):
+    """
+    Process UBoot header file to extract PIN information
+    """
     pins_filename = get_header_filename(chip_type)
     pins = open(pins_filename).readlines()
     pin_dict = dict()
@@ -138,6 +153,9 @@ def process_pins(chip_type):
 
 
 def process_iomux(input_file):
+    """
+    Process IOMux information from IOMUX XMl file
+    """
     root = parse_iomux(input_file)
     pad_dict = dict()
     signals = root.findall(".//SignalDesign[@IsChecked='true']")
@@ -150,7 +168,7 @@ def process_iomux(input_file):
 
 def main(input_file):
     """
-    Get information from IoMux XML file
+    Main method
     """
 
     chip_type, pad_dict = process_iomux(input_file)
