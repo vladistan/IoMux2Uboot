@@ -96,6 +96,14 @@ def write_pad_dict(pad_dict, pin_dict):
     w.close()
 
 
+def append_pin(pin_dict, addr, mode, name):
+    try:
+        pin_dict[addr][mode] = name
+    except KeyError:
+        pin_dict[addr] = dict()
+        pin_dict[addr][mode] = name
+
+
 def process_pins(chip_type):
     pins_filename = get_header_filename(chip_type)
     pins = open(pins_filename).readlines()
@@ -106,11 +114,8 @@ def process_pins(chip_type):
             addr = pins[i + 1].strip()[12:].split(',')[0]
             mode = int(pins[i + 1].strip()[12:].split(',')[2].strip().split('|')[0].strip())
 
-            try:
-                pin_dict[addr][mode] = name
-            except KeyError:
-                pin_dict[addr] = dict()
-                pin_dict[addr][mode] = name
+            append_pin(pin_dict, addr, mode, name)
+
     return pin_dict
 
 

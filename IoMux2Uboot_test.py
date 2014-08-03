@@ -36,6 +36,32 @@ class PadDictTest(TestCase):
         self.assertDictEqual(pad_dict, {'bill': {3: [9, 7, 3]}, 'bob': {1: [1, 2, 4]}})
 
 
+class PinDictTest(TestCase):
+    """
+    Tests for Pin dictionary
+    """
+
+    def setUp(self):
+        pass
+
+    def test_append_pad_to_existing_instance(self):
+
+        pin_dict = {1: {'bob': 4}}
+        IoMux2Uboot.append_pin(pin_dict, 1, 'sam', 7)
+
+        self.assertDictEqual(pin_dict, { 1: {'bob': 4, 'sam': 7}})
+
+    def test_append_pad_to_new_instance(self):
+
+        pin_dict = {1: {'bob': 4}}
+        IoMux2Uboot.append_pin(pin_dict, 3, 'sam', 7)
+
+        self.assertDictEqual(pin_dict, {3: {"sam": 7}, 1: {'bob': 4}})
+
+
+
+
+
 class ProcessRegistersTest(TestCase):
 
     def setUp(self):
