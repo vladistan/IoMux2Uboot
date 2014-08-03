@@ -6,7 +6,7 @@ Unit tests for conversion script
 __author__ = 'vlad'
 
 from unittest import TestCase
-from mock import patch, call, Mock
+from mock import patch, call, Mock, ANY
 from mock import mock_open
 
 import IoMux2Uboot
@@ -14,6 +14,9 @@ import IoMux2Uboot
 
 
 class PadDictTest(TestCase):
+    """
+    Tests For pad dictionary methods
+    """
 
     def setUp(self):
         pass
@@ -45,13 +48,37 @@ class ProcessRegistersTest(TestCase):
         def sig_se(*args):
             if args == ('.//Routing',):
                 return routing
+            if args == ('Instance',):
+                return "audmux"
+            if args == ('Name',):
+                return 'AUD5_RXD'
+
+            return "Sig:Unknown"
+
+
+        def reg_se(*args):
+            if args == ('Name',):
+                return padname
+            if args == ('Address',):
+                return "0x020E03F0"
+
+            return "Reg:Unknown"
+
+        def route_se(*args):
+
+            if args == ('mode',):
+                return altname
+            if args == ('padNet',):
+                return "padNet.DISP0_DATA19"
 
         signal = Mock(side_effect=sig_se)
         register = Mock()
-        register.get = Mock(return_value=padname)
+        register.get = Mock(side_effect=reg_se)
 
-        routing.get = Mock(name="GET", return_value=altname)
+        routing.get = Mock(side_effect=route_se)
         signal.find = Mock(side_effect=sig_se)
+        signal.get  = Mock(side_effect=sig_se)
+
 
         return register, signal
 
@@ -71,19 +98,20 @@ class ProcessRegistersTest(TestCase):
         append_pad = Mock()
 
         with patch('IoMux2Uboot.append_pad', append_pad):
-            IoMux2Uboot.process_registers(5, signal, register)
+            IoMux2Uboot.process_registers("PADS", signal, register)
 
         self.assertTrue(append_pad.called)
 
-    def test_append_pad_is_never_called_when_alt_ctl_pad_is_not_there(self):
+    def test_append_has_correct_args(self):
 
-        register, signal = self.setup_mocks("SW_PAD_CTL_PAD", "BOB")
+        register, signal = self.setup_mocks("SW_PAD_CTL_PAD", "ALT5")
         append_pad = Mock()
 
         with patch('IoMux2Uboot.append_pad', append_pad):
-            IoMux2Uboot.process_registers(5, signal, register)
+            IoMux2Uboot.process_registers("PADS", signal, register)
 
-        self.assertFalse(append_pad.called)
+        calls = [call.append_pad("PADS", "audmux", '03F0', 'AUD5_RXD', 'DISP0_DATA19', '5')]
+        append_pad.assert_has_calls(calls)
 
 
 class DebugTest(TestCase):
