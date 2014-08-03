@@ -59,7 +59,16 @@ class PinDictTest(TestCase):
         self.assertDictEqual(pin_dict, {3: {"sam": 7}, 1: {'bob': 4}})
 
 
+class ParsePinLineTest(TestCase):
 
+    def test_parsing_of_two_line_pin(self):
+
+        lines = [  "#define MX6DL_PAD_CSI0_DAT13__SDMA_DEBUG_PC_7                                  \\",
+		           "        IOMUX_PAD(0x036C, 0x0058, 4, 0x0000, 0, NO_PAD_CTRL)" ]
+
+        rv = IoMux2Uboot.parse_pin_line(lines, 0)
+
+        self.assertEquals(rv, ('036C', 4, "MX6DL_PAD_CSI0_DAT13__SDMA_DEBUG_PC_7") )
 
 
 class ProcessRegistersTest(TestCase):

@@ -104,15 +104,20 @@ def append_pin(pin_dict, addr, mode, name):
         pin_dict[addr][mode] = name
 
 
+def parse_pin_line(pins, i):
+    name = pins[i][8:].split()[0]
+    addr = pins[i + 1].strip()[12:].split(',')[0]
+    mode = int(pins[i + 1].strip()[12:].split(',')[2].strip().split('|')[0].strip())
+    return addr, mode, name
+
+
 def process_pins(chip_type):
     pins_filename = get_header_filename(chip_type)
     pins = open(pins_filename).readlines()
     pin_dict = dict()
     for i in range(0, len(pins)):
         if pins[i].startswith('#define MX6DL_PAD'):
-            name = pins[i][8:].split()[0]
-            addr = pins[i + 1].strip()[12:].split(',')[0]
-            mode = int(pins[i + 1].strip()[12:].split(',')[2].strip().split('|')[0].strip())
+            addr, mode, name = parse_pin_line(pins, i)
 
             append_pin(pin_dict, addr, mode, name)
 
