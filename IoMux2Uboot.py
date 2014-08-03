@@ -70,36 +70,34 @@ def append_pad(pad_dict, instance, address, name, net, mode):
         pad_dict[instance][address] = [name, net, mode]
 
 
-def main(input_file):
-    """
-    Get information from IoMux XML file
-    """
+def process_registers(pad_dict, register, signal):
+    sig_routing = signal.find(".//Routing")
+    if 'SW_PAD_CTL_PAD' in register.get('Name') and 'ALT' in sig_routing.get('mode'):
+        address = register.get('Address')[6:]
+        name = signal.get('Name')
+        net = sig_routing.get('padNet')[7:]
+        mode = sig_routing.get('mode')[-1:]
+        instance = signal.get('Instance')
+        append_pad(pad_dict, instance, address, name, net, mode)
 
-    root = parse_iomux(input_file)
 
-    pad_dict = dict()
+def write_pad_dict(pad_dict, pin_dict):
+    w = open('DCD_commands.c', 'w')
+    for instance in pad_dict:
+        w.write('void setup_%s(){\n' % instance)
+        for address in pad_dict[instance]:
+            mode = int(pad_dict[instance][address][2])
+            pin = pin_dict[address][mode]
+            comment = pad_dict[instance][address][0] + " -- " + pad_dict[instance][address][1]
+            w.write('\tmxc_iomux_v3_setup_pad(%s) // %s\n' % (pin, comment))
+        w.write('}\n\n')
+    w.close()
 
-    signals = root.findall(".//SignalDesign[@IsChecked='true']")
-    for signal in signals:
-        for register in signal.findall(".//Register"):
-            sig_routing = signal.find(".//Routing")
-            if 'SW_PAD_CTL_PAD' in register.get('Name') and 'ALT' in sig_routing.get('mode'):
-                address = register.get('Address')[6:]
-                name = signal.get('Name')
-                net = sig_routing.get('padNet')[7:]
-                mode = sig_routing.get('mode')[-1:]
-                instance = signal.get('Instance')
-                append_pad(pad_dict, instance, address, name, net, mode)
 
-    dump_iomux(pad_dict)
-
-    chip_type = root.find(".//Chip").text
+def process_pins(chip_type):
     pins_filename = get_header_filename(chip_type)
-
-    # Create nested dictionary from header file.
     pins = open(pins_filename).readlines()
     pin_dict = dict()
-
     for i in range(0, len(pins)):
         if pins[i].startswith('#define MX6DL_PAD'):
             name = pins[i][8:].split()[0]
@@ -111,22 +109,35 @@ def main(input_file):
             except KeyError:
                 pin_dict[addr] = dict()
                 pin_dict[addr][mode] = name
+    return pin_dict
 
+
+def process_iomux(input_file):
+    root = parse_iomux(input_file)
+    pad_dict = dict()
+    signals = root.findall(".//SignalDesign[@IsChecked='true']")
+    for signal in signals:
+        for register in signal.findall(".//Register"):
+            process_registers(pad_dict, register, signal)
+    chip_type = root.find(".//Chip").text
+    return chip_type, pad_dict
+
+
+def main(input_file):
+    """
+    Get information from IoMux XML file
+    """
+
+    chip_type, pad_dict = process_iomux(input_file)
+    dump_iomux(pad_dict)
+
+
+    # Create nested dictionary from header file.
+    pin_dict = process_pins(chip_type)
     dump_pin_dict(pin_dict)
 
     # Write pad setup and comment to file
-    w = open('DCD_commands.c', 'w')
-
-    for instance in pad_dict:
-        w.write('void setup_%s(){\n' % instance)
-        for address in pad_dict[instance]:
-            mode = int(pad_dict[instance][address][2])
-            pin = pin_dict[address][mode]
-            comment = pad_dict[instance][address][0] + " -- " + pad_dict[instance][address][1]
-            w.write('\tmxc_iomux_v3_setup_pad(%s) // %s\n' % (pin, comment))
-        w.write('}\n\n')
-
-    w.close()
+    write_pad_dict(pad_dict, pin_dict)
 
 
 if __name__ == "__main__":
