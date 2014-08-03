@@ -1,10 +1,9 @@
 # coding=utf-8
-# Not finished. Was attempting to create dictionary from XML file similar to pinDict.
-# This is so that the pads can be grouped by instance as in the IOMux.
-# The goal was to write smaller functions like setup_eim(), setup_gpio1(), etc.
+"""
+Script for converting IOMUX xml file created by Freescale IoMux tool into
+UBoot's IoMux program code
 
-# Created the dictionary. Just need to change the matching functionality to adapt
-# the new data structure. Also need to create the function creation.
+"""
 
 import xml.etree.ElementTree as Et
 
@@ -28,10 +27,11 @@ def dump_pin_dict(pin_dict):
     if not DEBUG:
         return
 
-    w = open('pinDict.dmp', 'w')
-    [w.write('%s: %s\n' % (pin, pin_dict[pin])) for pin in pin_dict]
-    w.flush()
-    w.close()
+    out = open('pinDict.dmp', 'w')
+    for pin in pin_dict:
+        out.write('%s: %s\n' % (pin, pin_dict[pin]))
+    out.flush()
+    out.close()
 
 
 def dump_iomux(pad_dict):
@@ -41,17 +41,20 @@ def dump_iomux(pad_dict):
     if not DEBUG:
         return
 
-    w = open('iomux.dmp', 'w')
+    out = open('iomux.dmp', 'w')
     for instance in sorted(pad_dict):
         for address in pad_dict[instance]:
             pad = pad_dict[instance][address]
-            w.write('Instance: %8s, Address: @ %s, Name: %20s, Net: %16s, Mode: %1s\n' % (
+            out.write('Instance: %8s, Address: @ %s, Name: %20s, Net: %16s, Mode: %1s\n' % (
                 instance, address, pad[0], pad[1], pad[2]))
-    w.flush()
-    w.close()
+    out.flush()
+    out.close()
 
 
 def get_header_filename(chip_type):
+    """
+        Determine the file name for the header based on the chip type
+    """
     if 'DL' in chip_type:
         pins_filename = 'headers/mx6dl_pins.h'
     elif 'SL' in chip_type:
@@ -63,6 +66,9 @@ def get_header_filename(chip_type):
 
 
 def append_pad(pad_dict, instance, address, name, net, mode):
+    """
+    Append the pad definition to the dictionary.  If necessary create sub dictionary
+    """
     try:
         pad_dict[instance][address] = [name, net, mode]
     except KeyError:
@@ -71,6 +77,9 @@ def append_pad(pad_dict, instance, address, name, net, mode):
 
 
 def process_registers(pad_dict, signal, register):
+    """
+        Process register definition from XML file
+    """
     sig_routing = signal.find(".//Routing")
     signal_mode = sig_routing.get('mode')
     if 'SW_PAD_CTL_PAD' in register.get('Name') and 'ALT' in signal_mode:
