@@ -17,15 +17,20 @@ class PadDictTest(TestCase):
     Tests For pad dictionary methods
     """
 
+    def setUp(self):
+        """
+        Setup the test fixtures
+        """
+        self.test_pad = {'bob': {1: [1, 2, 4]}}
+
     def test_append_pad_to_existing_instance(self):
         """
         Test whether appending pad to existing instance works
         """
 
-        pad_dict = {'bob': {1: [1, 2, 4]}}
-        IoMux2Uboot.append_pad(pad_dict, 'bob', 3, 9, 7, 3)
+        IoMux2Uboot.append_pad(self.test_pad, 'bob', 3, 9, 7, 3)
 
-        self.assertDictEqual(pad_dict, {'bob': {3: [9, 7, 3], 1: [1, 2, 4]}})
+        self.assertDictEqual(self.test_pad, {'bob': {3: [9, 7, 3], 1: [1, 2, 4]}})
 
     def test_append_pad_to_new_instance(self):
         """
@@ -87,6 +92,11 @@ class ProcessRegistersTest(TestCase):
     Tests for registers processing
     """
 
+    def setUp(self):
+        """
+        Setup text fixtures
+        """
+        self.mock_append = Mock()
 
     def test_that_only_regs_with_alt_and_ctl_pad_are_processed(self):
         """
@@ -107,14 +117,14 @@ class ProcessRegistersTest(TestCase):
         """
 
         register, signal = setup_mocks("SW_PAD_CTL_PAD", "ALT5")
-        append_pad = Mock()
 
-        with patch('IoMux2Uboot.append_pad', append_pad):
+        with patch('IoMux2Uboot.append_pad', self.mock_append):
             IoMux2Uboot.process_registers("PADS", signal, register)
 
-        self.assertTrue(append_pad.called)
+        self.assertTrue(self.mock_append.called)
 
-    def test_append_has_correct_args(self):
+    @staticmethod
+    def test_append_has_correct_args():
         """
         Test we appending pads correctly
         """
@@ -247,7 +257,7 @@ class DebugTest(TestCase):
             '03C0': ['AUD6_RXD', 'DI0_PIN04', '2'],
             '03E4': ['AUD5_TXC', 'DISP0_DATA16', '3'],
             '03F0': ['AUD5_RXD', 'DISP0_DATA19', '3'],
-                          }}
+        }}
 
         with patch('IoMux2Uboot.open', self.open, create=True):
             IoMux2Uboot.dump_iomux(iomux_dict)
@@ -276,12 +286,12 @@ class PinInfoFromPadTest(TestCase):
         pad_dict = {'audmux': {'03B4': ['AUD6_TXC', 'DI0_PIN15', '2']}}
 
         pin_dict = {"03B4":
-                        {
-                            1: 'MX6DL_PAD_DI0_PIN15__LCDIF_ENABLE',
-                            2: 'MX6DL_PAD_DI0_PIN15__AUDMUX_AUD6_TXC',
-                            3: 'MX6DL_PAD_DI0_PIN15__MIPI_CORE_DPHY_TEST_OUT_29',
-                        }
-                   }
+                    {
+                        1: 'MX6DL_PAD_DI0_PIN15__LCDIF_ENABLE',
+                        2: 'MX6DL_PAD_DI0_PIN15__AUDMUX_AUD6_TXC',
+                        3: 'MX6DL_PAD_DI0_PIN15__MIPI_CORE_DPHY_TEST_OUT_29',
+                    }
+        }
 
         pin_info = IoMux2Uboot.pin_info_from_pad(pad_dict, pin_dict, "audmux", '03B4')
 
@@ -431,3 +441,4 @@ class ParserTest(TestCase):
         self.assertEquals(len(no_alt_wo_jtag), 0)
 
         # There should be 0 signal w/o routing that belong neither to DRAM nor JTAG
+
