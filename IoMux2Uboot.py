@@ -6,6 +6,7 @@ UBoot's IoMux program code
 """
 
 import xml.etree.ElementTree as Et
+import sys, getopt
 
 DEBUG = 1
 
@@ -14,7 +15,10 @@ def parse_iomux(input_file):
     """
     Parse IOMux file
     """
-    tree = Et.parse(input_file)
+    try:
+        tree = Et.parse(input_file)
+    except IOError:
+        sys.exit('File "%s" not found' % input_file)
     root = tree.getroot()
     return root
 
@@ -101,11 +105,16 @@ def pin_info_from_pad(pad_dict, pin_dict, instance, address):
     return comment, pin
 
 
-def write_pad_dict(pad_dict, pin_dict):
+def write_pad_dict(output_file, pad_dict, pin_dict):
     """
     Write IOMux definition to the UBoot C file
     """
-    out = open('DCD_commands.c', 'w')
+
+    try:
+        out = open(output_file, 'w')
+    except IOError:
+        sys.exit('File "%s" not found' % output_file)
+
     for instance in pad_dict:
         out.write('void setup_%s(){\n' % instance)
         for address in pad_dict[instance]:
@@ -165,11 +174,39 @@ def process_iomux(input_file):
     chip_type = root.find(".//Chip").text
     return chip_type, pad_dict
 
+def get_filenames(argv):
+    """
+    Extract filenames from command-line arguremts.
+    """
 
-def main(input_file):
+    input_file = ''
+    output_file = ''
+
+    if not (len(argv) > 0):
+        sys.exit('IoMux2Uboot.py -i <input_file> -o <output_file>')
+
+    try:
+        opts, args = getopt.getopt(argv, "hi:o:", ["ifile=","ofile="])
+    except getopt.GetoptError:
+        sys.exit('IoMux2Uboot.py -i <input_file> -o <output_file>')
+    for opt, arg in opts:
+        if opt == '-h':
+            sys.exit('IoMux2Uboot.py -i <input_file> -o <output_file>')
+        elif opt in ("-i", "--ifile"):
+            input_file = arg
+        elif opt in ("-o", "--ofile"):
+            output_file = arg
+        else:
+            sys.exit('IoMux2Uboot.py -i <input_file> -o <output_file>')
+
+    return input_file, output_file
+
+def main(argv):
     """
     Main method
     """
+
+    input_file, output_file = get_filenames(argv)
 
     chip_type, pad_dict = process_iomux(input_file)
     dump_iomux(pad_dict)
@@ -180,8 +217,8 @@ def main(input_file):
     dump_pin_dict(pin_dict)
 
     # Write pad setup and comment to file
-    write_pad_dict(pad_dict, pin_dict)
+    write_pad_dict(output_file, pad_dict, pin_dict)
 
 
 if __name__ == "__main__":
-    main('samples/i.MX6SDL_Sabre_AI_RevA.IomuxDesign.xml')
+    main(sys.argv[1:])
