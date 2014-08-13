@@ -1,0 +1,29 @@
+IoMux2Uboot - A conversion tool for Freescale's Pin Mux Tool
+Vlad Korolev   vlad@v-lad.org
+
+with Contributions from Gurashish Singh <gurashishs@gmail.com>
+
+Description
+------------
+
+This tool converts the output file from Freescale's i.MX 6 Interactive i.MX Pin
+Mux Tool to C functions compatible with Uboot. This makes porting a new board 
+to Uboot easier and faster.
+
+Usage
+------
+
+python IoMux2Uboot.py -i <input_file> -o <output_file>
+
+input_file - an XML file, which is the output from the Pin Mux Tool.
+output_file - output file containing C functions compatible with Uboot.
+
+Example
+--------
+
+python IoMux2Uboot.py -i samples/i.MX6SDL_EVB_X3.IoMuxDesign.xml -o DCD.c
+
+Support
+--------
+
+Currently IoMux2Uboot only supports SDL and SL chip types.
