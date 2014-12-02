@@ -6,7 +6,8 @@ UBoot's IoMux program code
 """
 
 import xml.etree.ElementTree as Et
-import sys, getopt
+import sys
+import getopt
 
 DEBUG = 1
 
@@ -174,6 +175,7 @@ def process_iomux(input_file):
     chip_type = root.find(".//Chip").text
     return chip_type, pad_dict
 
+
 def get_filenames(argv):
     """
     Extract filenames from command-line arguremts.
@@ -182,11 +184,11 @@ def get_filenames(argv):
     input_file = ''
     output_file = ''
 
-    if not (len(argv) > 0):
+    if not len(argv) > 0:
         sys.exit('IoMux2Uboot.py -i <input_file> -o <output_file>')
 
     try:
-        opts, args = getopt.getopt(argv, "hi:o:", ["ifile=","ofile="])
+        opts, args = getopt.getopt(argv, "hi:o:", ["ifile=", "ofile="])
     except getopt.GetoptError:
         sys.exit('IoMux2Uboot.py -i <input_file> -o <output_file>')
     for opt, arg in opts:
@@ -201,6 +203,7 @@ def get_filenames(argv):
 
     return input_file, output_file
 
+
 def main(argv):
     """
     Main method
@@ -210,7 +213,6 @@ def main(argv):
 
     chip_type, pad_dict = process_iomux(input_file)
     dump_iomux(pad_dict)
-
 
     # Create nested dictionary from header file.
     pin_dict = process_pins(chip_type)
