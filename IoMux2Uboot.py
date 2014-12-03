@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # coding=utf-8
 """
 Script for converting IOMUX xml file created by Freescale IoMux tool into
