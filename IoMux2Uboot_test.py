@@ -298,6 +298,26 @@ class PinInfoFromPadTest(TestCase):
         self.assertEquals(pin_info, ('AUD6_TXC -- DI0_PIN15', 'MX6DL_PAD_DI0_PIN15__AUDMUX_AUD6_TXC'))
 
 
+class ArgParseTest(TestCase):
+
+    def setUp(self):
+        pass
+
+    def test_with_no_args_just_exit(self):
+        self.assertRaises(SystemExit, IoMux2Uboot.get_filenames, [])
+
+    def test_with_help_arg_prints_msg_and_exit(self):
+        self.assertRaises(SystemExit, IoMux2Uboot.get_filenames, ['-h'])
+
+    def test_with_correct_args_returns_file_names(self):
+
+        inp, out = IoMux2Uboot.get_filenames(['-i', 'bob', '-o', 'john'])
+        self.assertEqual('bob', inp)
+        self.assertEqual('john', out)
+
+    def test_with_incorrect_args_exits_with_msg(self):
+        self.assertRaises(SystemExit, IoMux2Uboot.get_filenames, ['-j','bob'])
+
 class ChipTypeTest(TestCase):
     """
         Tests for chip type selection

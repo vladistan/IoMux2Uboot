@@ -10,6 +10,8 @@ import xml.etree.ElementTree as Et
 import sys
 import getopt
 
+USAGE = 'IoMux2Uboot.py -i <input_file> -o <output_file>'
+
 DEBUG = 1
 
 
@@ -186,21 +188,21 @@ def get_filenames(argv):
     output_file = ''
 
     if not len(argv) > 0:
-        sys.exit('IoMux2Uboot.py -i <input_file> -o <output_file>')
+        sys.exit(USAGE)
 
     try:
         opts, args = getopt.getopt(argv, "hi:o:", ["ifile=", "ofile="])
     except getopt.GetoptError:
-        sys.exit('IoMux2Uboot.py -i <input_file> -o <output_file>')
+        sys.exit(USAGE)
     for opt, arg in opts:
         if opt == '-h':
-            sys.exit('IoMux2Uboot.py -i <input_file> -o <output_file>')
+            sys.exit(USAGE)
         elif opt in ("-i", "--ifile"):
             input_file = arg
         elif opt in ("-o", "--ofile"):
             output_file = arg
         else:
-            sys.exit('IoMux2Uboot.py -i <input_file> -o <output_file>')
+            sys.exit(USAGE)
 
     return input_file, output_file
 
