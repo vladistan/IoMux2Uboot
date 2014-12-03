@@ -36,7 +36,7 @@ def dump_pin_dict(pin_dict):
         return
 
     out = open('pinDict.dmp', 'w')
-    for pin in pin_dict:
+    for pin in sorted(pin_dict.keys()):
         out.write('%s: %s\n' % (pin, pin_dict[pin]))
     out.flush()
     out.close()
@@ -119,11 +119,11 @@ def write_pad_dict(output_file, pad_dict, pin_dict):
     except IOError:
         sys.exit('File "%s" not found' % output_file)
 
-    for instance in pad_dict:
+    for instance in sorted(pad_dict.keys()):
         out.write('void setup_%s(){\n' % instance)
-        for address in pad_dict[instance]:
+        for address in sorted(pad_dict[instance]):
             comment, pin = pin_info_from_pad(pad_dict, pin_dict, instance, address)
-            out.write('\tmxc_iomux_v3_setup_pad(%s) // %s\n' % (pin, comment))
+            out.write('\tmxc_iomux_v3_setup_pad(%s) // %s (0x%s)\n' % (pin, comment, address))
         out.write('}\n\n')
     out.close()
 

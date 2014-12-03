@@ -191,6 +191,68 @@ def setup_mocks(padname, altname):
     return register, signal
 
 
+class OutputTest(TestCase):
+    """
+    Test for output
+    """
+
+    def setUp(self):
+        """
+        Setup mock
+        """
+        self.open = mock_open()
+
+    def test_CorrectOutput(self):
+        pads = {'audmux': {
+            '03BC': ['AUD4_TXFS', 'SD2_DATA1', '2'],
+            '03C0': ['AUD4_TXC', 'SD2_DATA3', '2']
+            },
+            'i2c1': {
+            '0398': ['I2C1_SDA', 'CSI0_DATA08', '4'],
+            '039C': ['I2C1_SCL', 'CSI0_DATA09', '4']
+            }
+        }
+
+        pins = {'03C0': {2: "MX6DL_PAD_SD2_DAT3__AUDMUX_AUD4_TXC", 3: "BOLL"},
+                '03BC': {2: "MX6DL_PAD_SD2_DAT1__AUDMUX_AUD4_TXFS", 314: "PETE"},
+                '0398': {4: "MX6DL_PAD_CSI0_DAT8__I2C1_SDA"},
+                '039C': {4: "MX6DL_PAD_CSI0_DAT9__I2C1_SCL"}}
+
+        with patch('IoMux2Uboot.open', self.open, create=True):
+                IoMux2Uboot.write_pad_dict("out.c", pads, pins)
+
+        calls = [call("void setup_audmux(){\n"),
+                 call("\tmxc_iomux_v3_setup_pad(MX6DL_PAD_SD2_DAT1__AUDMUX_AUD4_TXFS) // AUD4_TXFS -- SD2_DATA1 (0x03BC)\n"),
+                 call("\tmxc_iomux_v3_setup_pad(MX6DL_PAD_SD2_DAT3__AUDMUX_AUD4_TXC) // AUD4_TXC -- SD2_DATA3 (0x03C0)\n"),
+                 call("}\n\n"),
+                 call("void setup_i2c1(){\n"),
+                 call("\tmxc_iomux_v3_setup_pad(MX6DL_PAD_CSI0_DAT8__I2C1_SDA) // I2C1_SDA -- CSI0_DATA08 (0x0398)\n"),
+                 call("\tmxc_iomux_v3_setup_pad(MX6DL_PAD_CSI0_DAT9__I2C1_SCL) // I2C1_SCL -- CSI0_DATA09 (0x039C)\n"),
+                 call("}\n\n")
+                 ]
+
+        self.open.assert_called_once_with("out.c", "w")
+        handle = self.open()
+        handle.write.assert_has_calls(calls)
+
+    def test_OutputInCorrectOrder(self):
+
+        pads = {'audmux': {}, 'i2c1': {}}
+
+        with patch('IoMux2Uboot.open', self.open, create=True):
+                IoMux2Uboot.write_pad_dict("out.c", pads, {})
+
+        calls = [call("void setup_audmux(){\n"),
+                 call("}\n\n"),
+                 call("void setup_i2c1(){\n"),
+                 call("}\n\n")
+                 ]
+
+        self.open.assert_called_once_with("out.c", "w")
+        handle = self.open()
+        handle.write.assert_has_calls(calls)
+
+
 class DebugTest(TestCase):
     """
     Test for debug dumpers
@@ -228,12 +290,12 @@ class DebugTest(TestCase):
         """
 
         with patch('IoMux2Uboot.open', self.open, create=True):
-            IoMux2Uboot.dump_pin_dict({1: {1: "BOB", 2: "BOLL"}, 2: {2: "JANE", 314: "PETE"}})
+            IoMux2Uboot.dump_pin_dict({2: {1: "BOB", 2: "BOLL"}, 1: {2: "JANE", 314: "PETE"}})
 
         self.open.assert_called_once_with("pinDict.dmp", "w")
         handle = self.open()
 
-        calls = [call.write("1: {1: 'BOB', 2: 'BOLL'}\n"), call().write("2: {2: 'JANE', 314: 'PETE'}\n")]
+        calls = [call().write("1: {2: 'JANE', 314: 'PETE'}\n"), call.write("2: {1: 'BOB', 2: 'BOLL'}\n") ]
         handle.write.assert_has_calls(calls)
 
     def test_when_debug_is_false_should_not_write_iomux(self):
