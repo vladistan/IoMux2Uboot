@@ -175,7 +175,7 @@ def write_mem_dump(output_file, regs, start_addr, length):
 
         str_addr = "%08X" % addr
         if addr % 16 == 0:
-            out.write(str_addr + " ")
+            out.write(str_addr + ": ")
 
         if str_addr in regs:
             val = int(regs[str_addr], 16)

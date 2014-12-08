@@ -221,7 +221,7 @@ class MemDumpTest(TestCase):
                 IoMux2Uboot.write_mem_dump("out.dump", reg_dict, 0x020E0070, 28)
 
         calls = [
-            call("020E0070 "),
+            call("020E0070: "),
             call("01020304"),
             call(" "),
             call("01020304"),
@@ -230,7 +230,7 @@ class MemDumpTest(TestCase):
             call(" "),
             call("01020304"),
             call("\n"),
-            call("020E0080 "),
+            call("020E0080: "),
             call("01020304"),
             call(" "),
             call("01020304"),
