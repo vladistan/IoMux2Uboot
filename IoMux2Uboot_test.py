@@ -217,7 +217,7 @@ class MemDumpTest(TestCase):
         }
 
         with patch('IoMux2Uboot.open', self.open, create=True):
-                IoMux2Uboot.write_mem_dump("out.dump", reg_dict)
+                IoMux2Uboot.write_mem_dump("out.dump", reg_dict, 0x020E0070, 28)
 
         calls = [
             call("020E0070 "),

@@ -147,22 +147,34 @@ def int_to_dump_rep(int_val):
 
     return str[:-1]
 
-def write_mem_dump(output_file, regs):
+def write_mem_dump(output_file, regs, start_addr, len):
 
     try:
         out = open(output_file, 'w')
     except IOError:
         sys.exit('Cannot open "%s" for writing' % output_file)
 
-    for x in sorted(regs.keys()):
-        addr = int(x, 16)
+
+    addr = start_addr
+
+    for x in range(0, len):
+
+        str_addr = "%08X" % addr
         if addr % 16 == 0:
-            out.write("%08X " % addr)
-        out.write(int_to_dump_rep(int(regs[x], 16)))
+            out.write(str_addr + " ")
+
+        if str_addr in regs:
+            val = int(regs[str_addr], 16)
+            out.write(int_to_dump_rep(val))
+        else:
+            out.write('XX XX XX XX')
+
         if addr % 16 == 0xC:
             out.write('\n')
         else:
             out.write(' ')
+
+        addr += 4
 
 
 def append_pin(pin_dict, addr, mode, name):
@@ -264,7 +276,7 @@ def main(argv):
     write_pad_dict(output_file, pad_dict, pin_dict)
 
     # Write memdump of iomux area
-    write_mem_dump("iomux.dump", regs)
+    write_mem_dump("iomux.dump", regs, 0x020E0000, 0x260)
 
 
 if __name__ == "__main__":
