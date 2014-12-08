@@ -153,10 +153,10 @@ def int_to_dump_rep(int_val):
     """
     str_rep = ""
     for s in range(0, 4):
-        str_rep += "%02X " % ((int_val & 0xff000000) >> 24)
+        str_rep += "%02X" % ((int_val & 0xff000000) >> 24)
         int_val = (int_val << 8)
 
-    return str_rep[:-1]
+    return str_rep
 
 
 def write_mem_dump(output_file, regs, start_addr, length):
@@ -181,7 +181,7 @@ def write_mem_dump(output_file, regs, start_addr, length):
             val = int(regs[str_addr], 16)
             out.write(int_to_dump_rep(val))
         else:
-            out.write('XX XX XX XX')
+            out.write('XXXXXXXX')
 
         if addr % 16 == 0xC:
             out.write('\n')

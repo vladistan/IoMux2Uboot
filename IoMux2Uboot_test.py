@@ -204,7 +204,7 @@ class MemDumpTest(TestCase):
 
         x = IoMux2Uboot.int_to_dump_rep(0x01020388)
 
-        self.assertEqual("01 02 03 88", x)
+        self.assertEqual("01020388", x)
 
     def test_correctOutput(self):
         reg_dict = {
@@ -222,20 +222,20 @@ class MemDumpTest(TestCase):
 
         calls = [
             call("020E0070 "),
-            call("01 02 03 04"),
+            call("01020304"),
             call(" "),
-            call("01 02 03 04"),
+            call("01020304"),
             call(" "),
-            call("XX XX XX XX"),
+            call("XXXXXXXX"),
             call(" "),
-            call("01 02 03 04"),
+            call("01020304"),
             call("\n"),
             call("020E0080 "),
-            call("01 02 03 04"),
+            call("01020304"),
             call(" "),
-            call("01 02 03 04"),
+            call("01020304"),
             call(" "),
-            call("01 02 03 88"),
+            call("01020388"),
             call(" ")
         ]
 
