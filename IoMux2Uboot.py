@@ -6,6 +6,7 @@ UBoot's IoMux program code
 
 """
 
+from __future__ import print_function
 import xml.etree.ElementTree as Et
 import sys
 import getopt
@@ -87,11 +88,16 @@ def append_pad(pad_dict, instance, address, name, net, mode):
 def record_reg_bin(reg_dict, register):
 
     address = register.get('Address')[2:]
-    value   = register.get('Value')[2:]
+    value = register.get('Value')[2:]
+
+    if address in reg_dict:
+        if value == reg_dict[address]:
+            #print ("WARN: Duplicate reg addr %s val %s" % (address, value))
+            pass
+        else:
+            print ("ERROR: IOMUX conflict addr %s Val %s NewVal %s" % (address, reg_dict[address], value))
 
     reg_dict[address] = value
-
-
 
 
 def process_registers(pad_dict, signal, register):
@@ -139,25 +145,27 @@ def write_pad_dict(output_file, pad_dict, pin_dict):
 
 
 def int_to_dump_rep(int_val):
-    str = ""
-    for s in range(0,4):
-        str += "%02X " % ((int_val & 0xff000000) >> 24)
+    """
+    Return byte dump representation of an integer
+    """
+    str_rep = ""
+    for s in range(0, 4):
+        str_rep += "%02X " % ((int_val & 0xff000000) >> 24)
         int_val = (int_val << 8)
 
+    return str_rep[:-1]
 
-    return str[:-1]
 
-def write_mem_dump(output_file, regs, start_addr, len):
+def write_mem_dump(output_file, regs, start_addr, length):
 
     try:
         out = open(output_file, 'w')
     except IOError:
         sys.exit('Cannot open "%s" for writing' % output_file)
 
-
     addr = start_addr
 
-    for x in range(0, len):
+    for x in range(0, length):
 
         str_addr = "%08X" % addr
         if addr % 16 == 0:
@@ -225,7 +233,7 @@ def process_iomux(input_file):
     for signal in signals:
         for register in signal.findall(".//Register"):
             process_registers(pad_dict, signal, register)
-            record_reg_bin(reg_dict,register)
+            record_reg_bin(reg_dict, register)
     chip_type = root.find(".//Chip").text
     return chip_type, pad_dict, reg_dict
 

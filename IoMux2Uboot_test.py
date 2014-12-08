@@ -198,6 +198,7 @@ class MemDumpTest(TestCase):
         Setup mock
         """
         self.open = mock_open()
+        self.prnt = Mock()
 
     def test_int_to_dump_rep(self):
 
@@ -251,6 +252,17 @@ class MemDumpTest(TestCase):
         IoMux2Uboot.record_reg_bin(reg_dict, reg2)
 
         self.assertDictContainsSubset({'200E0070': '00000001', '200E0384': '0001B030'}, reg_dict)
+
+    def test_MustErrorAboutDuplicateEntitiesWithDiffValues(self):
+        reg1 = {'Address': '0x200E0070', 'Value': '0x00000001'}
+        reg2 = {'Address': '0x200E0070', 'Value': '0x00000002'}
+        reg_dict = dict()
+
+        with patch('IoMux2Uboot.print', self.prnt, create=True):
+                IoMux2Uboot.record_reg_bin(reg_dict, reg1)
+                IoMux2Uboot.record_reg_bin(reg_dict, reg2)
+
+        self.prnt.assert_called_once_with("ERROR: IOMUX conflict addr 200E0070 Val 00000001 NewVal 00000002")
 
 
 class OutputTest(TestCase):
