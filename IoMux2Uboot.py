@@ -86,6 +86,9 @@ def append_pad(pad_dict, instance, address, name, net, mode):
 
 
 def record_reg_bin(reg_dict, register):
+    """
+    Record register binary value
+    """
 
     address = register.get('Address')[2:]
     value = register.get('Value')[2:]
@@ -157,6 +160,9 @@ def int_to_dump_rep(int_val):
 
 
 def write_mem_dump(output_file, regs, start_addr, length):
+    """
+    Write binary dump of IOMUX memory
+    """
 
     try:
         out = open(output_file, 'w')

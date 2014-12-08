@@ -259,8 +259,8 @@ class MemDumpTest(TestCase):
         reg_dict = dict()
 
         with patch('IoMux2Uboot.print', self.prnt, create=True):
-                IoMux2Uboot.record_reg_bin(reg_dict, reg1)
-                IoMux2Uboot.record_reg_bin(reg_dict, reg2)
+            IoMux2Uboot.record_reg_bin(reg_dict, reg1)
+            IoMux2Uboot.record_reg_bin(reg_dict, reg2)
 
         self.prnt.assert_called_once_with("ERROR: IOMUX conflict addr 200E0070 Val 00000001 NewVal 00000002")
 
@@ -291,7 +291,7 @@ class OutputTest(TestCase):
                 '039C': {4: "MX6DL_PAD_CSI0_DAT9__I2C1_SCL"}}
 
         with patch('IoMux2Uboot.open', self.open, create=True):
-                IoMux2Uboot.write_pad_dict("out.c", pads, pins)
+            IoMux2Uboot.write_pad_dict("out.c", pads, pins)
 
         calls = [call("void setup_audmux(){\n"),
                  call("\tx_mxc_iomux_v3_setup_pad(MX6DL_PAD_SD2_DAT1__AUDMUX_AUD4_TXFS);"
@@ -304,8 +304,7 @@ class OutputTest(TestCase):
                       " // I2C1_SDA -- CSI0_DATA08 (0x0398)\n"),
                  call("\tx_mxc_iomux_v3_setup_pad(MX6DL_PAD_CSI0_DAT9__I2C1_SCL);"
                       " // I2C1_SCL -- CSI0_DATA09 (0x039C)\n"),
-                 call("}\n\n")
-                 ]
+                 call("}\n\n")]
 
         self.open.assert_called_once_with("out.c", "w")
         handle = self.open()
@@ -316,13 +315,12 @@ class OutputTest(TestCase):
         pads = {'audmux': {}, 'i2c1': {}}
 
         with patch('IoMux2Uboot.open', self.open, create=True):
-                IoMux2Uboot.write_pad_dict("out.c", pads, {})
+            IoMux2Uboot.write_pad_dict("out.c", pads, {})
 
         calls = [call("void setup_audmux(){\n"),
                  call("}\n\n"),
                  call("void setup_i2c1(){\n"),
-                 call("}\n\n")
-                 ]
+                 call("}\n\n")]
 
         self.open.assert_called_once_with("out.c", "w")
         handle = self.open()
