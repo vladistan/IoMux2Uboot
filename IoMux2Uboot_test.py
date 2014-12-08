@@ -191,6 +191,68 @@ def setup_mocks(padname, altname):
     return register, signal
 
 
+class MemDumpTest(TestCase):
+
+    def setUp(self):
+        """
+        Setup mock
+        """
+        self.open = mock_open()
+
+    def test_int_to_dump_rep(self):
+
+        x = IoMux2Uboot.int_to_dump_rep(0x01020388)
+
+        self.assertEqual("01 02 03 88", x)
+
+    def test_correctOutput(self):
+        reg_dict = {
+            '020E0070': '01020304',
+            '020E0074': '01020304',
+            '020E007C': '01020304',
+            '020E0080': '01020304',
+            '020E0084': '01020304',
+            '020E0088': '01020388',
+
+        }
+
+        with patch('IoMux2Uboot.open', self.open, create=True):
+                IoMux2Uboot.write_mem_dump("out.dump", reg_dict)
+
+        calls = [
+            call("020E0070 "),
+            call("01 02 03 04"),
+            call(" "),
+            call("01 02 03 04"),
+            call(" "),
+            call("XX XX XX XX"),
+            call(" "),
+            call("01 02 03 04"),
+            call("\n"),
+            call("020E0080 "),
+            call("01 02 03 04"),
+            call(" "),
+            call("01 02 03 04"),
+            call(" "),
+            call("01 02 03 88"),
+            call(" ")
+        ]
+
+        self.open.assert_called_once_with("out.dump", "w")
+        handle = self.open()
+        handle.write.assert_has_calls(calls)
+
+    def test_CorrectRegRecording(self):
+        reg1 = {'Address': '0x200E0070', 'Value': '0x00000001'}
+        reg2 = {'Address': '0x200E0384', 'Value': '0x0001B030'}
+        reg_dict = dict()
+
+        IoMux2Uboot.record_reg_bin(reg_dict, reg1)
+        IoMux2Uboot.record_reg_bin(reg_dict, reg2)
+
+        self.assertDictContainsSubset({'200E0070': '00000001', '200E0384': '0001B030'}, reg_dict)
+
+
 class OutputTest(TestCase):
     """
     Test for output
@@ -203,15 +265,13 @@ class OutputTest(TestCase):
         self.open = mock_open()
 
     def test_CorrectOutput(self):
-        pads = {'audmux': {
-            '03BC': ['AUD4_TXFS', 'SD2_DATA1', '2'],
-            '03C0': ['AUD4_TXC', 'SD2_DATA3', '2']
-            },
+        pads = {
+            'audmux': {
+                '03BC': ['AUD4_TXFS', 'SD2_DATA1', '2'],
+                '03C0': ['AUD4_TXC', 'SD2_DATA3', '2']},
             'i2c1': {
-            '0398': ['I2C1_SDA', 'CSI0_DATA08', '4'],
-            '039C': ['I2C1_SCL', 'CSI0_DATA09', '4']
-            }
-        }
+                '0398': ['I2C1_SDA', 'CSI0_DATA08', '4'],
+                '039C': ['I2C1_SCL', 'CSI0_DATA09', '4']}}
 
         pins = {'03C0': {2: "MX6DL_PAD_SD2_DAT3__AUDMUX_AUD4_TXC", 3: "BOLL"},
                 '03BC': {2: "MX6DL_PAD_SD2_DAT1__AUDMUX_AUD4_TXFS", 314: "PETE"},
@@ -222,12 +282,16 @@ class OutputTest(TestCase):
                 IoMux2Uboot.write_pad_dict("out.c", pads, pins)
 
         calls = [call("void setup_audmux(){\n"),
-                 call("\tmxc_iomux_v3_setup_pad(MX6DL_PAD_SD2_DAT1__AUDMUX_AUD4_TXFS) // AUD4_TXFS -- SD2_DATA1 (0x03BC)\n"),
-                 call("\tmxc_iomux_v3_setup_pad(MX6DL_PAD_SD2_DAT3__AUDMUX_AUD4_TXC) // AUD4_TXC -- SD2_DATA3 (0x03C0)\n"),
+                 call("\tx_mxc_iomux_v3_setup_pad(MX6DL_PAD_SD2_DAT1__AUDMUX_AUD4_TXFS);"
+                      " // AUD4_TXFS -- SD2_DATA1 (0x03BC)\n"),
+                 call("\tx_mxc_iomux_v3_setup_pad(MX6DL_PAD_SD2_DAT3__AUDMUX_AUD4_TXC);"
+                      " // AUD4_TXC -- SD2_DATA3 (0x03C0)\n"),
                  call("}\n\n"),
                  call("void setup_i2c1(){\n"),
-                 call("\tmxc_iomux_v3_setup_pad(MX6DL_PAD_CSI0_DAT8__I2C1_SDA) // I2C1_SDA -- CSI0_DATA08 (0x0398)\n"),
-                 call("\tmxc_iomux_v3_setup_pad(MX6DL_PAD_CSI0_DAT9__I2C1_SCL) // I2C1_SCL -- CSI0_DATA09 (0x039C)\n"),
+                 call("\tx_mxc_iomux_v3_setup_pad(MX6DL_PAD_CSI0_DAT8__I2C1_SDA);"
+                      " // I2C1_SDA -- CSI0_DATA08 (0x0398)\n"),
+                 call("\tx_mxc_iomux_v3_setup_pad(MX6DL_PAD_CSI0_DAT9__I2C1_SCL);"
+                      " // I2C1_SCL -- CSI0_DATA09 (0x039C)\n"),
                  call("}\n\n")
                  ]
 
@@ -417,7 +481,7 @@ class ComprehensiveInputTest(TestCase):
         Test that we read IOMUX correctly
         """
 
-        chip, pads = IoMux2Uboot.process_iomux('samples/i.MX6SDL_Sabre_AI_RevA.IomuxDesign.xml')
+        chip, pads, regs = IoMux2Uboot.process_iomux('samples/i.MX6SDL_Sabre_AI_RevA.IomuxDesign.xml')
         self.assertEquals(chip, "i.MX6SDL")
 
         enet_regs = {'06B4': ['RGMII_TD2', 'RGMII_TD2', '1'],
@@ -437,6 +501,8 @@ class ComprehensiveInputTest(TestCase):
                      '06AC': ['RGMII_TD0', 'RGMII_TD0', '1']}
 
         self.assertDictContainsSubset({'enet': enet_regs}, pads)
+        self.assertDictContainsSubset({'020E06B4': '0001B030'}, regs)
+        self.assertDictContainsSubset({'020E0874': '00000001'}, regs)
 
     def test_read_pins(self):
         """

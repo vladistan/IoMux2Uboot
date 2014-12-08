@@ -6,5 +6,5 @@
 .idea
 __pycache__
 /folder/
-
 *.pyc
+iomux.dump

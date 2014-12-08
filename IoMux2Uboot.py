@@ -84,9 +84,19 @@ def append_pad(pad_dict, instance, address, name, net, mode):
         pad_dict[instance][address] = [name, net, mode]
 
 
+def record_reg_bin(reg_dict, register):
+
+    address = register.get('Address')[2:]
+    value   = register.get('Value')[2:]
+
+    reg_dict[address] = value
+
+
+
+
 def process_registers(pad_dict, signal, register):
     """
-        Process register definition from XML file
+    Process register definition from XML file
     """
     sig_routing = signal.find(".//Routing")
     signal_mode = sig_routing.get('mode')
@@ -126,6 +136,33 @@ def write_pad_dict(output_file, pad_dict, pin_dict):
             out.write('\tmxc_iomux_v3_setup_pad(%s) // %s (0x%s)\n' % (pin, comment, address))
         out.write('}\n\n')
     out.close()
+
+
+def int_to_dump_rep(int_val):
+    str = ""
+    for s in range(0,4):
+        str += "%02X " % ((int_val & 0xff000000) >> 24)
+        int_val = (int_val << 8)
+
+
+    return str[:-1]
+
+def write_mem_dump(output_file, regs):
+
+    try:
+        out = open(output_file, 'w')
+    except IOError:
+        sys.exit('Cannot open "%s" for writing' % output_file)
+
+    for x in sorted(regs.keys()):
+        addr = int(x, 16)
+        if addr % 16 == 0:
+            out.write("%08X " % addr)
+        out.write(int_to_dump_rep(int(regs[x], 16)))
+        if addr % 16 == 0xC:
+            out.write('\n')
+        else:
+            out.write(' ')
 
 
 def append_pin(pin_dict, addr, mode, name):
@@ -171,12 +208,14 @@ def process_iomux(input_file):
     """
     root = parse_iomux(input_file)
     pad_dict = dict()
+    reg_dict = dict()
     signals = root.findall(".//SignalDesign[@IsChecked='true']")
     for signal in signals:
         for register in signal.findall(".//Register"):
             process_registers(pad_dict, signal, register)
+            record_reg_bin(reg_dict,register)
     chip_type = root.find(".//Chip").text
-    return chip_type, pad_dict
+    return chip_type, pad_dict, reg_dict
 
 
 def get_filenames(argv):
@@ -214,7 +253,7 @@ def main(argv):
 
     input_file, output_file = get_filenames(argv)
 
-    chip_type, pad_dict = process_iomux(input_file)
+    chip_type, pad_dict, regs = process_iomux(input_file)
     dump_iomux(pad_dict)
 
     # Create nested dictionary from header file.
@@ -223,6 +262,9 @@ def main(argv):
 
     # Write pad setup and comment to file
     write_pad_dict(output_file, pad_dict, pin_dict)
+
+    # Write memdump of iomux area
+    write_mem_dump("iomux.dump", regs)
 
 
 if __name__ == "__main__":
