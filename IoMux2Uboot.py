@@ -133,7 +133,7 @@ def write_pad_dict(output_file, pad_dict, pin_dict):
         out.write('void setup_%s(){\n' % instance)
         for address in sorted(pad_dict[instance]):
             comment, pin = pin_info_from_pad(pad_dict, pin_dict, instance, address)
-            out.write('\tmxc_iomux_v3_setup_pad(%s) // %s (0x%s)\n' % (pin, comment, address))
+            out.write('\tx_mxc_iomux_v3_setup_pad(%s); // %s (0x%s)\n' % (pin, comment, address))
         out.write('}\n\n')
     out.close()
 

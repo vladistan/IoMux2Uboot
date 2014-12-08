@@ -359,7 +359,7 @@ class DebugTest(TestCase):
         self.open.assert_called_once_with("pinDict.dmp", "w")
         handle = self.open()
 
-        calls = [call().write("1: {2: 'JANE', 314: 'PETE'}\n"), call.write("2: {1: 'BOB', 2: 'BOLL'}\n") ]
+        calls = [call().write("1: {2: 'JANE', 314: 'PETE'}\n"), call.write("2: {1: 'BOB', 2: 'BOLL'}\n")]
         handle.write.assert_has_calls(calls)
 
     def test_when_debug_is_false_should_not_write_iomux(self):
@@ -411,13 +411,13 @@ class PinInfoFromPadTest(TestCase):
 
         pad_dict = {'audmux': {'03B4': ['AUD6_TXC', 'DI0_PIN15', '2']}}
 
-        pin_dict = {"03B4":
-                    {
-                        1: 'MX6DL_PAD_DI0_PIN15__LCDIF_ENABLE',
-                        2: 'MX6DL_PAD_DI0_PIN15__AUDMUX_AUD6_TXC',
-                        3: 'MX6DL_PAD_DI0_PIN15__MIPI_CORE_DPHY_TEST_OUT_29',
-                    }
-        }
+        pin_dict = {
+            "03B4":
+                {
+                    1: 'MX6DL_PAD_DI0_PIN15__LCDIF_ENABLE',
+                    2: 'MX6DL_PAD_DI0_PIN15__AUDMUX_AUD6_TXC',
+                    3: 'MX6DL_PAD_DI0_PIN15__MIPI_CORE_DPHY_TEST_OUT_29',
+                }}
 
         pin_info = IoMux2Uboot.pin_info_from_pad(pad_dict, pin_dict, "audmux", '03B4')
 
@@ -442,7 +442,8 @@ class ArgParseTest(TestCase):
         self.assertEqual('john', out)
 
     def test_with_incorrect_args_exits_with_msg(self):
-        self.assertRaises(SystemExit, IoMux2Uboot.get_filenames, ['-j','bob'])
+        self.assertRaises(SystemExit, IoMux2Uboot.get_filenames, ['-j', 'bob'])
+
 
 class ChipTypeTest(TestCase):
     """
